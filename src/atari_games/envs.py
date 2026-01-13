@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import Any
 
 import gymnasium as gym
+import ale_py
 from gymnasium.wrappers import AtariPreprocessing, FrameStackObservation, RecordEpisodeStatistics
 
 
@@ -14,7 +15,11 @@ def make_cartpole(env_id: str, seed: int) -> gym.Env:
 
 
 def make_atari(env_id: str, seed: int, preprocess: dict[str, Any]) -> gym.Env:
-    env = gym.make(env_id)
+    try:
+        gym.register_envs(ale_py)
+    except Exception:
+        pass
+    env = gym.make(env_id, frameskip=1, repeat_action_probability=0.0)
     env = AtariPreprocessing(
         env,
         noop_max=preprocess.get("no_op_max", 30),
