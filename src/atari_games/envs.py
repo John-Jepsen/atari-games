@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import Any
 
 import gymnasium as gym
-from gymnasium.wrappers import AtariPreprocessing, FrameStack, RecordEpisodeStatistics
+from gymnasium.wrappers import AtariPreprocessing, FrameStackObservation, RecordEpisodeStatistics
 
 
 def make_cartpole(env_id: str, seed: int) -> gym.Env:
@@ -24,7 +24,7 @@ def make_atari(env_id: str, seed: int, preprocess: dict[str, Any]) -> gym.Env:
         grayscale_obs=preprocess.get("grayscale", True),
         scale_obs=False,
     )
-    env = FrameStack(env, preprocess.get("frame_stack", 4))
+    env = FrameStackObservation(env, stack_size=preprocess.get("frame_stack", 4))
     env = RecordEpisodeStatistics(env)
     env.reset(seed=seed)
     return env
