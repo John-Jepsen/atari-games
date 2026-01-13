@@ -1,0 +1,45 @@
+## Reference docs (do not version control)
+doc-referances/
+atari-games-instructions/
+
+## Local configs and secrets
+.env
+.env.*
+*.env
+*.local
+*.local.*
+config/local/
+configs/local/
+
+## Python / tooling
+__pycache__/
+*.pyc
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.cache/
+.venv/
+venv/
+
+## Notebooks
+.ipynb_checkpoints/
+
+## Data, artifacts, and experiment outputs
+data/
+datasets/
+artifacts/
+checkpoints/
+models/
+runs/
+logs/
+wandb/
+tensorboard/
+*.log
+*.npy
+*.npz
+*.pkl
+*.pickle
+*.pth
+*.pt
+*.ckpt
+*.h5
