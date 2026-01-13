@@ -1,0 +1,16 @@
+# Core
+numpy
+
+# RL environment
+# NOTE: Atari support requires ROMs; see Gymnasium + ALE docs.
+gymnasium
+ale-py
+
+# Deep learning
+torch
+
+# Utilities
+opencv-python
+matplotlib
+tqdm
+tensorboard

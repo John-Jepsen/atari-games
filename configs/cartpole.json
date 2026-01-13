@@ -1,0 +1,22 @@
+{
+  "env_id": "CartPole-v1",
+  "seed": 42,
+  "observation_type": "state",
+  "dqn": {
+    "gamma": 0.99,
+    "learning_rate": 0.00025,
+    "optimizer": "rmsprop",
+    "batch_size": 32,
+    "replay_capacity": 100000,
+    "target_update_steps": 1000,
+    "epsilon_start": 1.0,
+    "epsilon_end": 0.1,
+    "epsilon_decay_frames": 200000,
+    "reward_clip": false
+  },
+  "training": {
+    "total_frames": 500000,
+    "eval_every_frames": 50000,
+    "eval_episodes": 10
+  }
+}
