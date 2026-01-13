@@ -16,7 +16,9 @@
   },
   "training": {
     "total_frames": 500000,
+    "learning_starts": 1000,
     "eval_every_frames": 50000,
-    "eval_episodes": 10
+    "eval_episodes": 10,
+    "checkpoint_every_frames": 50000
   }
 }

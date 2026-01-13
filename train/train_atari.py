@@ -3,11 +3,12 @@ from __future__ import annotations
 
 import argparse
 
-from atari_games.config import load_config, require_keys, summarize_config
+from atari_games.config import load_config, require_keys
+from atari_games.trainer import dump_run_summary, train_from_config
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Train an Atari agent (scaffold).")
+    parser = argparse.ArgumentParser(description="Train an Atari agent (DQN).")
     parser.add_argument(
         "--config",
         required=True,
@@ -18,9 +19,10 @@ def main() -> int:
     cfg = load_config(args.config)
     require_keys(cfg, ["env_id", "seed", "dqn", "training"], "root")
 
-    print("Loaded config:")
-    print(summarize_config(cfg))
-    print("\nScaffold only: core DQN components will be implemented in Step 3.")
+    result = train_from_config(cfg)
+    dump_run_summary(cfg, result)
+    print(f"Saved metrics to {result.metrics_path}")
+    print(f"Saved checkpoint to {result.checkpoint_path}")
     return 0
 
 
