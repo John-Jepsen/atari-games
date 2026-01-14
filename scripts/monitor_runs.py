@@ -4,6 +4,7 @@ from __future__ import annotations
 import argparse
 import os
 import subprocess
+import sys
 import time
 from dataclasses import dataclass
 from pathlib import Path
@@ -20,6 +21,15 @@ class MetricSnapshot:
     avg_reward: float
     path: Path
     updated_seconds_ago: int
+
+
+@dataclass
+class SystemSnapshot:
+    load1: float
+    load5: float
+    load15: float
+    mem_used_mb: float
+    mem_free_mb: float
 
 
 def _run_ps() -> List[str]:
@@ -110,13 +120,90 @@ def collect_metrics(reports_dir: Path, tail: int) -> List[MetricSnapshot]:
     return snapshots
 
 
-def print_status(pids: List[Tuple[str, int]], snapshots: List[MetricSnapshot]) -> None:
+def _get_loadavg() -> Tuple[float, float, float]:
+    try:
+        return os.getloadavg()
+    except Exception:
+        return (0.0, 0.0, 0.0)
+
+
+def _get_memory_mb() -> Tuple[float, float]:
+    if sys.platform == "darwin":
+        try:
+            output = subprocess.check_output(["vm_stat"]).decode()
+            lines = output.splitlines()
+            page_size = 4096
+            for line in lines:
+                if "page size of" in line:
+                    try:
+                        page_size = int(line.split("page size of")[1].split("bytes")[0].strip())
+                    except Exception:
+                        page_size = 4096
+            stats = {}
+            for line in lines:
+                if ":" not in line:
+                    continue
+                key, value = line.split(":", 1)
+                value = value.strip().strip(".")
+                try:
+                    stats[key] = int(value)
+                except ValueError:
+                    continue
+            free_pages = stats.get("Pages free", 0) + stats.get("Pages speculative", 0)
+            used_pages = (
+                stats.get("Pages active", 0)
+                + stats.get("Pages inactive", 0)
+                + stats.get("Pages wired down", 0)
+                + stats.get("Pages compressed", 0)
+            )
+            mem_free_mb = (free_pages * page_size) / (1024 ** 2)
+            mem_used_mb = (used_pages * page_size) / (1024 ** 2)
+            return (mem_used_mb, mem_free_mb)
+        except Exception:
+            return (0.0, 0.0)
+
+    meminfo = Path("/proc/meminfo")
+    if meminfo.exists():
+        total_kb = 0
+        avail_kb = 0
+        for line in meminfo.read_text().splitlines():
+            if line.startswith("MemTotal:"):
+                total_kb = int(line.split()[1])
+            elif line.startswith("MemAvailable:"):
+                avail_kb = int(line.split()[1])
+        mem_used_mb = (total_kb - avail_kb) / 1024.0
+        mem_free_mb = avail_kb / 1024.0
+        return (mem_used_mb, mem_free_mb)
+
+    return (0.0, 0.0)
+
+
+def collect_system_snapshot() -> SystemSnapshot:
+    load1, load5, load15 = _get_loadavg()
+    mem_used_mb, mem_free_mb = _get_memory_mb()
+    return SystemSnapshot(
+        load1=load1,
+        load5=load5,
+        load15=load15,
+        mem_used_mb=mem_used_mb,
+        mem_free_mb=mem_free_mb,
+    )
+
+
+def print_status(pids: List[Tuple[str, int]], snapshots: List[MetricSnapshot], system: SystemSnapshot) -> None:
     print("\n=== Training Processes ===")
     if not pids:
         print("No training processes found.")
     else:
         for cmd, pid in pids:
             print(f"PID {pid}: {cmd}")
+
+    print("\n=== System ===")
+    print(
+        "load(avg): "
+        f"{system.load1:.2f} {system.load5:.2f} {system.load15:.2f} | "
+        f"mem_used={system.mem_used_mb:.0f}MB mem_free={system.mem_free_mb:.0f}MB"
+    )
 
     print("\n=== Metrics (last episodes) ===")
     if not snapshots:
@@ -131,20 +218,56 @@ def print_status(pids: List[Tuple[str, int]], snapshots: List[MetricSnapshot]) -
         )
 
 
+def _write_snapshot_header(path: Path) -> None:
+    path.write_text(
+        "timestamp,env_name,episodes,last_reward,avg_reward,epsilon,loss,updated_seconds_ago,"
+        "load1,load5,load15,mem_used_mb,mem_free_mb,pids\n"
+    )
+
+
+def append_snapshots(
+    path: Path,
+    system: SystemSnapshot,
+    snapshots: List[MetricSnapshot],
+    pids: List[Tuple[str, int]],
+) -> None:
+    if not path.exists():
+        _write_snapshot_header(path)
+    pid_list = "|".join(str(pid) for _, pid in pids)
+    ts = int(time.time())
+    with path.open("a") as f:
+        for snap in snapshots:
+            f.write(
+                f"{ts},{snap.env_name},{snap.episodes},{snap.last_reward:.3f},{snap.avg_reward:.3f},"
+                f"{snap.last_epsilon:.4f},{snap.last_loss:.6f},{snap.updated_seconds_ago},"
+                f"{system.load1:.3f},{system.load5:.3f},{system.load15:.3f},"
+                f"{system.mem_used_mb:.1f},{system.mem_free_mb:.1f},{pid_list}\n"
+            )
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Monitor long-running DQN training runs.")
     parser.add_argument("--reports", default="reports", help="Reports directory path.")
     parser.add_argument("--tail", type=int, default=20, help="Episodes to average over.")
     parser.add_argument("--interval", type=int, default=30, help="Refresh interval in seconds.")
     parser.add_argument("--once", action="store_true", help="Print once and exit.")
+    parser.add_argument(
+        "--snapshot-out",
+        default="reports/monitor_snapshots.csv",
+        help="CSV output path for periodic snapshots.",
+    )
     args = parser.parse_args()
 
     reports_dir = Path(args.reports)
+    snapshot_path = Path(args.snapshot_out)
 
     while True:
         pids = find_training_pids()
+        system = collect_system_snapshot()
         snapshots = collect_metrics(reports_dir, args.tail)
-        print_status(pids, snapshots)
+        print_status(pids, snapshots, system)
+        if snapshots:
+            append_snapshots(snapshot_path, system, snapshots, pids)
         if args.once:
             return 0
         time.sleep(args.interval)
