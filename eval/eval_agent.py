@@ -34,7 +34,7 @@ def main() -> int:
     require_keys(cfg, ["env_id", "seed", "dqn", "training"], "root")
     seed_everything(int(cfg.get("seed", 42)))
 
-    device = get_device()
+    device = get_device(cfg.get("device"))
     if cfg.get("observation_type") == "pixels":
         env = make_atari(cfg["env_id"], seed=int(cfg.get("seed", 42)), preprocess=cfg["preprocess"])
     else:

@@ -43,3 +43,6 @@ tensorboard/
 *.pt
 *.ckpt
 *.h5
+reports/*.csv
+reports/*.json
+reports/*.log

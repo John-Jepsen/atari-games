@@ -2,6 +2,7 @@
   "env_id": "ALE/SpaceInvaders-v5",
   "seed": 42,
   "observation_type": "pixels",
+  "device": "mps",
   "preprocess": {
     "grayscale": true,
     "resize_width": 84,
@@ -21,7 +22,13 @@
     "target_update_steps": 10000,
     "epsilon_start": 1.0,
     "epsilon_end": 0.1,
-    "epsilon_decay_frames": 1000000
+    "epsilon_decay_frames": 1000000,
+    "dueling": true,
+    "noisy": true,
+    "n_step": 3,
+    "per_alpha": 0.6,
+    "per_beta_start": 0.4,
+    "per_beta_frames": 1000000
   },
   "training": {
     "total_frames": 10000000,

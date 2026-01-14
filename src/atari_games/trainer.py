@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import time
+from collections import deque
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -11,10 +12,10 @@ import torch
 
 from .agent import AgentConfig, DQNAgent, choose_action
 from .envs import make_atari, make_cartpole
-from .networks import DQNCNN, DQNMLP
+from .networks import DQNCNN, DQNMLP, DuelingDQNCNN, DuelingDQNMLP
 from .preprocess import format_obs
-from .replay import ReplayBuffer
-from .utils import ensure_dir, get_device, seed_everything, to_numpy
+from .replay import PrioritizedReplayBuffer, ReplayBuffer
+from .utils import LinearSchedule, ensure_dir, get_device, seed_everything, to_numpy
 
 
 @dataclass
@@ -42,16 +43,26 @@ def _build_agent(cfg: dict[str, Any], obs_shape: tuple[int, ...], num_actions: i
         epsilon_start=dqn_cfg["epsilon_start"],
         epsilon_end=dqn_cfg["epsilon_end"],
         epsilon_decay_frames=dqn_cfg["epsilon_decay_frames"],
+        n_step=int(dqn_cfg.get("n_step", 1)),
+        noisy=bool(dqn_cfg.get("noisy", False)),
     )
 
     if cfg.get("observation_type") == "pixels":
         input_channels = obs_shape[0]
-        online = DQNCNN(input_channels=input_channels, num_actions=num_actions).to(device)
-        target = DQNCNN(input_channels=input_channels, num_actions=num_actions).to(device)
+        if dqn_cfg.get("dueling", True):
+            online = DuelingDQNCNN(input_channels=input_channels, num_actions=num_actions, noisy=agent_cfg.noisy).to(device)
+            target = DuelingDQNCNN(input_channels=input_channels, num_actions=num_actions, noisy=agent_cfg.noisy).to(device)
+        else:
+            online = DQNCNN(input_channels=input_channels, num_actions=num_actions).to(device)
+            target = DQNCNN(input_channels=input_channels, num_actions=num_actions).to(device)
     else:
         input_dim = obs_shape[0]
-        online = DQNMLP(input_dim=input_dim, num_actions=num_actions).to(device)
-        target = DQNMLP(input_dim=input_dim, num_actions=num_actions).to(device)
+        if dqn_cfg.get("dueling", True):
+            online = DuelingDQNMLP(input_dim=input_dim, num_actions=num_actions, noisy=agent_cfg.noisy).to(device)
+            target = DuelingDQNMLP(input_dim=input_dim, num_actions=num_actions, noisy=agent_cfg.noisy).to(device)
+        else:
+            online = DQNMLP(input_dim=input_dim, num_actions=num_actions).to(device)
+            target = DQNMLP(input_dim=input_dim, num_actions=num_actions).to(device)
 
     optimizer = torch.optim.RMSprop(online.parameters(), lr=agent_cfg.learning_rate)
     return DQNAgent(online, target, optimizer, agent_cfg, device)
@@ -60,6 +71,13 @@ def _build_agent(cfg: dict[str, Any], obs_shape: tuple[int, ...], num_actions: i
 def _prepare_buffer(cfg: dict[str, Any], obs_shape: tuple[int, ...]) -> ReplayBuffer:
     dqn_cfg = cfg["dqn"]
     obs_dtype = np.uint8 if cfg.get("observation_type") == "pixels" else np.float32
+    if dqn_cfg.get("per_alpha", 0.0) > 0.0:
+        return PrioritizedReplayBuffer(
+            dqn_cfg["replay_capacity"],
+            obs_shape=obs_shape,
+            obs_dtype=obs_dtype,
+            alpha=float(dqn_cfg.get("per_alpha", 0.6)),
+        )
     return ReplayBuffer(dqn_cfg["replay_capacity"], obs_shape=obs_shape, obs_dtype=obs_dtype)
 
 
@@ -75,7 +93,7 @@ def train_from_config(cfg: dict[str, Any], output_dir: str = "reports") -> Train
     seed = int(cfg.get("seed", 42))
     seed_everything(seed)
 
-    device = get_device()
+    device = get_device(cfg.get("device"))
 
     if cfg.get("observation_type") == "pixels":
         env = make_atari(cfg["env_id"], seed=seed, preprocess=cfg["preprocess"])
@@ -104,6 +122,13 @@ def train_from_config(cfg: dict[str, Any], output_dir: str = "reports") -> Train
     learning_starts = int(cfg["training"].get("learning_starts", 1000))
     checkpoint_every = int(cfg["training"].get("checkpoint_every_frames", 0) or 0)
     reward_clip = bool(cfg.get("preprocess", {}).get("reward_clip", False))
+    per_beta_schedule = LinearSchedule(
+        start=float(cfg["dqn"].get("per_beta_start", 0.4)),
+        end=1.0,
+        duration_frames=int(cfg["dqn"].get("per_beta_frames", total_frames)),
+    )
+    n_step = int(cfg["dqn"].get("n_step", 1))
+    n_step_buffer = deque(maxlen=n_step)
 
     ensure_dir(output_dir)
     metrics_path = Path(output_dir) / f"metrics_{cfg['env_id'].replace('/', '_')}.csv"
@@ -117,6 +142,7 @@ def train_from_config(cfg: dict[str, Any], output_dir: str = "reports") -> Train
     losses = []
 
     for frame in range(1, total_frames + 1):
+        agent.reset_noise()
         action = choose_action(agent, obs, env.action_space)
         next_obs, reward, terminated, truncated, _ = env.step(action)
         done = terminated or truncated
@@ -124,14 +150,32 @@ def train_from_config(cfg: dict[str, Any], output_dir: str = "reports") -> Train
             reward = float(np.clip(reward, -1.0, 1.0))
         next_obs = format_obs(to_numpy(next_obs), cfg.get("observation_type"))
 
-        buffer.add(obs, action, reward, next_obs, done)
+        n_step_buffer.append((obs, action, reward, next_obs, done))
+        if len(n_step_buffer) == n_step:
+            R = 0.0
+            done_n = False
+            next_obs_n = n_step_buffer[-1][3]
+            for i, (_, _, r, _, d) in enumerate(n_step_buffer):
+                R += (cfg["dqn"]["gamma"] ** i) * r
+                if d:
+                    done_n = True
+                    break
+            obs_0, action_0 = n_step_buffer[0][0], n_step_buffer[0][1]
+            buffer.add(obs_0, action_0, R, next_obs_n, done_n)
+            n_step_buffer.popleft()
         obs = next_obs
         episode_reward += reward
 
         agent.step()
         if frame > learning_starts and len(buffer) >= agent.config.batch_size:
-            batch = buffer.sample(agent.config.batch_size, device)
-            loss = agent.update(batch)
+            beta = per_beta_schedule.value(frame)
+            if isinstance(buffer, PrioritizedReplayBuffer):
+                batch = buffer.sample(agent.config.batch_size, device, beta=beta)
+            else:
+                batch = buffer.sample(agent.config.batch_size, device)
+            loss, td_errors = agent.update(batch)
+            if isinstance(buffer, PrioritizedReplayBuffer):
+                buffer.update_priorities(batch.indices, td_errors + 1e-6)
             losses.append(loss)
             agent.maybe_update_target()
 
@@ -139,6 +183,20 @@ def train_from_config(cfg: dict[str, Any], output_dir: str = "reports") -> Train
             episode += 1
             avg_loss = float(np.mean(losses)) if losses else 0.0
             _append_metrics(metrics_path, frame, episode, episode_reward, agent.epsilon(), avg_loss)
+            # Flush remaining n-step transitions (shorter horizons)
+            while n_step_buffer:
+                R = 0.0
+                done_n = False
+                next_obs_n = n_step_buffer[-1][3]
+                for i, (_, _, r, _, d) in enumerate(n_step_buffer):
+                    R += (cfg["dqn"]["gamma"] ** i) * r
+                    if d:
+                        done_n = True
+                        break
+                obs_0, action_0 = n_step_buffer[0][0], n_step_buffer[0][1]
+                buffer.add(obs_0, action_0, R, next_obs_n, done_n)
+                n_step_buffer.popleft()
+
             obs, _ = env.reset()
             obs = format_obs(to_numpy(obs), cfg.get("observation_type"))
             episode_reward = 0.0
@@ -155,6 +213,7 @@ def train_from_config(cfg: dict[str, Any], output_dir: str = "reports") -> Train
 
 
 def evaluate_agent(agent: DQNAgent, env, episodes: int, epsilon: float, observation_type: str | None = None) -> float:
+    agent.online_net.eval()
     rewards = []
     for _ in range(episodes):
         obs, _ = env.reset()
@@ -170,6 +229,7 @@ def evaluate_agent(agent: DQNAgent, env, episodes: int, epsilon: float, observat
             obs = format_obs(to_numpy(next_obs), observation_type)
             total += reward
         rewards.append(total)
+    agent.online_net.train()
     return float(np.mean(rewards)) if rewards else 0.0
 
 

@@ -2,6 +2,7 @@
   "env_id": "CartPole-v1",
   "seed": 42,
   "observation_type": "state",
+  "device": "mps",
   "dqn": {
     "gamma": 0.99,
     "learning_rate": 0.00025,
@@ -12,7 +13,13 @@
     "epsilon_start": 1.0,
     "epsilon_end": 0.1,
     "epsilon_decay_frames": 200000,
-    "reward_clip": false
+    "reward_clip": false,
+    "dueling": true,
+    "noisy": true,
+    "n_step": 3,
+    "per_alpha": 0.4,
+    "per_beta_start": 0.4,
+    "per_beta_frames": 200000
   },
   "training": {
     "total_frames": 500000,
