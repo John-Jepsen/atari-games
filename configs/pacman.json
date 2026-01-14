@@ -28,7 +28,8 @@
     "n_step": 3,
     "per_alpha": 0.6,
     "per_beta_start": 0.4,
-    "per_beta_frames": 1000000
+    "per_beta_frames": 1000000,
+    "efficient_replay": true
   },
   "training": {
     "total_frames": 10000000,

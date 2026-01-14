@@ -17,3 +17,4 @@ Rainbow-Lite switches:
 - `noisy`: enable NoisyLinear exploration (epsilon still supported but optional).
 - `n_step`: multi-step returns.
 - `per_alpha`, `per_beta_start`, `per_beta_frames`: prioritized replay settings.
+- `efficient_replay`: store single frames and reconstruct stacks to reduce RAM usage.

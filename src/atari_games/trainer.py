@@ -14,7 +14,12 @@ from .agent import AgentConfig, DQNAgent, choose_action
 from .envs import make_atari, make_cartpole
 from .networks import DQNCNN, DQNMLP, DuelingDQNCNN, DuelingDQNMLP
 from .preprocess import format_obs
-from .replay import PrioritizedReplayBuffer, ReplayBuffer
+from .replay import (
+    FrameStackReplayBuffer,
+    PrioritizedFrameStackReplayBuffer,
+    PrioritizedReplayBuffer,
+    ReplayBuffer,
+)
 from .utils import LinearSchedule, ensure_dir, get_device, seed_everything, to_numpy
 
 
@@ -71,6 +76,20 @@ def _build_agent(cfg: dict[str, Any], obs_shape: tuple[int, ...], num_actions: i
 def _prepare_buffer(cfg: dict[str, Any], obs_shape: tuple[int, ...]) -> ReplayBuffer:
     dqn_cfg = cfg["dqn"]
     obs_dtype = np.uint8 if cfg.get("observation_type") == "pixels" else np.float32
+    if cfg.get("observation_type") == "pixels" and dqn_cfg.get("efficient_replay", False):
+        frame_shape = obs_shape[1:] if len(obs_shape) == 3 else obs_shape
+        stack_size = int(cfg.get("preprocess", {}).get("frame_stack", 4))
+        if dqn_cfg.get("per_alpha", 0.0) > 0.0:
+            return PrioritizedFrameStackReplayBuffer(
+                dqn_cfg["replay_capacity"],
+                frame_shape=frame_shape,
+                stack_size=stack_size,
+                alpha=float(dqn_cfg.get("per_alpha", 0.6)),
+            )
+        return FrameStackReplayBuffer(
+            dqn_cfg["replay_capacity"], frame_shape=frame_shape, stack_size=stack_size
+        )
+
     if dqn_cfg.get("per_alpha", 0.0) > 0.0:
         return PrioritizedReplayBuffer(
             dqn_cfg["replay_capacity"],
@@ -169,12 +188,12 @@ def train_from_config(cfg: dict[str, Any], output_dir: str = "reports") -> Train
         agent.step()
         if frame > learning_starts and len(buffer) >= agent.config.batch_size:
             beta = per_beta_schedule.value(frame)
-            if isinstance(buffer, PrioritizedReplayBuffer):
+            if isinstance(buffer, (PrioritizedReplayBuffer, PrioritizedFrameStackReplayBuffer)):
                 batch = buffer.sample(agent.config.batch_size, device, beta=beta)
             else:
                 batch = buffer.sample(agent.config.batch_size, device)
             loss, td_errors = agent.update(batch)
-            if isinstance(buffer, PrioritizedReplayBuffer):
+            if isinstance(buffer, (PrioritizedReplayBuffer, PrioritizedFrameStackReplayBuffer)):
                 buffer.update_priorities(batch.indices, td_errors + 1e-6)
             losses.append(loss)
             agent.maybe_update_target()
