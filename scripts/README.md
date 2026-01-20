@@ -31,6 +31,8 @@ Compare devices in one command:
 python scripts/compare_benchmarks.py --config configs/cartpole.json --frames 20000
 ```
 
+This also writes a Markdown summary to `reports/benchmarks/<tag>/summary.md`.
+
 CSV snapshots are appended to `reports/monitor_snapshots.csv` by default. You can
 change the output path:
 
