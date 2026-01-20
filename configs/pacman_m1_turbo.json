@@ -39,6 +39,8 @@
     "eval_episodes": 10,
     "eval_epsilon": 0.05,
     "checkpoint_every_frames": 250000,
+    "log_events": true,
+    "log_every_frames": 20000,
     "early_stop_avg_reward": 1000,
     "early_stop_min_frames": 2000000,
     "early_stop_eval_windows": 2,
@@ -52,6 +54,12 @@
     "plateau_gap_delta": 0.0,
     "plateau_td_improve_threshold": 0.0,
     "plateau_probe_states": 256,
-    "td_error_ema_alpha": 0.05
+    "td_error_ema_alpha": 0.05,
+    "plateau_action": "epsilon_boost",
+    "plateau_stop_after_action": false,
+    "plateau_action_cooldown_frames": 500000,
+    "plateau_epsilon_boost": 0.1,
+    "plateau_boost_frames": 200000,
+    "plateau_lr_decay": 0.5
   }
 }

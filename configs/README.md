@@ -32,6 +32,16 @@ Plateau gate (multi-objective) keys:
 - `plateau_td_improve_threshold`: TD-error improvement threshold.
 - `plateau_probe_states`: number of probe states sampled from replay.
 - `td_error_ema_alpha`: smoothing factor for TD-error EMA.
+- `plateau_action`: `stop`, `epsilon_boost`, or `lr_decay`.
+- `plateau_stop_after_action`: stop immediately after action if true.
+- `plateau_action_cooldown_frames`: minimum frames between actions.
+- `plateau_epsilon_boost`: exploration rate during boost.
+- `plateau_boost_frames`: duration of exploration boost.
+- `plateau_lr_decay`: LR multiplier when decay action triggers.
+
+Event logging:
+- `log_events`: write JSONL events to `reports/events_<env>.jsonl`.
+- `log_every_frames`: add heartbeat events every N frames.
 
 Rainbow-Lite switches:
 - `dueling`: enable dueling value/advantage heads.

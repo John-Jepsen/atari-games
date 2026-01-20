@@ -7,6 +7,13 @@ Run a lightweight monitor to track training progress and recent rewards:
 python scripts/monitor_runs.py --interval 30
 ```
 
+Alerts + notifications (macOS):
+
+```
+. .venv/bin/activate
+python scripts/monitor_runs.py --interval 60 --notify --stale-seconds 300 --min-avg-reward-delta 1
+```
+
 One-shot snapshot:
 
 ```

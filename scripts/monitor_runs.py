@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import argparse
+import json
 import os
 import subprocess
 import sys
@@ -190,7 +191,54 @@ def collect_system_snapshot() -> SystemSnapshot:
     )
 
 
-def print_status(pids: List[Tuple[str, int]], snapshots: List[MetricSnapshot], system: SystemSnapshot) -> None:
+def _notify(message: str, title: str = "Atari Training") -> None:
+    try:
+        subprocess.run(
+            [
+                "osascript",
+                "-e",
+                f'display notification "{message}" with title "{title}"',
+            ],
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+    except Exception:
+        return
+
+
+def _read_last_event(path: Path) -> Optional[dict]:
+    if not path.exists():
+        return None
+    try:
+        with path.open("rb") as f:
+            f.seek(0, os.SEEK_END)
+            size = f.tell()
+            block = 4096
+            data = b""
+            while size > 0 and data.count(b"\n") <= 1:
+                read_size = min(block, size)
+                f.seek(size - read_size)
+                data = f.read(read_size) + data
+                size -= read_size
+        lines = [line for line in data.splitlines() if line.strip()]
+        if not lines:
+            return None
+        return json.loads(lines[-1].decode())
+    except Exception:
+        return None
+
+
+def print_status(
+    pids: List[Tuple[str, int]],
+    snapshots: List[MetricSnapshot],
+    system: SystemSnapshot,
+    events_dir: Path,
+    notify: bool,
+    stale_seconds: int,
+    min_avg_reward_delta: float,
+    prev_alerts: dict,
+) -> None:
     print("\n=== Training Processes ===")
     if not pids:
         print("No training processes found.")
@@ -216,6 +264,31 @@ def print_status(pids: List[Tuple[str, int]], snapshots: List[MetricSnapshot], s
             f"epsilon={snap.last_epsilon:.3f} loss={snap.last_loss:.4f} "
             f"updated={snap.updated_seconds_ago}s ago"
         )
+        alert_key = f"{snap.env_name}-stale"
+        if stale_seconds and snap.updated_seconds_ago > stale_seconds:
+            msg = f"{snap.env_name} stalled (> {stale_seconds}s without updates)."
+            print(f"ALERT: {msg}")
+            if notify and not prev_alerts.get(alert_key):
+                _notify(msg)
+                prev_alerts[alert_key] = True
+        else:
+            prev_alerts.pop(alert_key, None)
+
+        event_path = events_dir / f"events_{snap.env_name}.jsonl"
+        last_event = _read_last_event(event_path)
+        if last_event:
+            print(f"  last_event: {last_event.get('type')} @ frame {last_event.get('frame')}")
+
+    if min_avg_reward_delta and snapshots:
+        for snap in snapshots:
+            key = f"{snap.env_name}-avg"
+            prev = prev_alerts.get(key)
+            if prev is None:
+                prev_alerts[key] = snap.avg_reward
+                continue
+            if (snap.avg_reward - prev) < min_avg_reward_delta and notify:
+                _notify(f"{snap.env_name} avg reward flat (< {min_avg_reward_delta} gain).")
+            prev_alerts[key] = snap.avg_reward
 
 
 def _write_snapshot_header(path: Path) -> None:
@@ -251,6 +324,15 @@ def main() -> int:
     parser.add_argument("--tail", type=int, default=20, help="Episodes to average over.")
     parser.add_argument("--interval", type=int, default=30, help="Refresh interval in seconds.")
     parser.add_argument("--once", action="store_true", help="Print once and exit.")
+    parser.add_argument("--notify", action="store_true", help="Send macOS notifications on alerts.")
+    parser.add_argument("--stale-seconds", type=int, default=300, help="Alert if no updates for N seconds.")
+    parser.add_argument(
+        "--min-avg-reward-delta",
+        type=float,
+        default=0.0,
+        help="Alert if avg reward doesn't improve by this delta.",
+    )
+    parser.add_argument("--events", default="reports", help="Directory for events_*.jsonl logs.")
     parser.add_argument(
         "--snapshot-out",
         default="reports/monitor_snapshots.csv",
@@ -260,12 +342,23 @@ def main() -> int:
 
     reports_dir = Path(args.reports)
     snapshot_path = Path(args.snapshot_out)
+    events_dir = Path(args.events)
+    prev_alerts: dict = {}
 
     while True:
         pids = find_training_pids()
         system = collect_system_snapshot()
         snapshots = collect_metrics(reports_dir, args.tail)
-        print_status(pids, snapshots, system)
+        print_status(
+            pids,
+            snapshots,
+            system,
+            events_dir,
+            args.notify,
+            args.stale_seconds,
+            args.min_avg_reward_delta,
+            prev_alerts,
+        )
         if snapshots:
             append_snapshots(snapshot_path, system, snapshots, pids)
         if args.once:
