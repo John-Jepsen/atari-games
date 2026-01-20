@@ -301,7 +301,20 @@ def print_status(
         event_path = events_dir / f"events_{snap.env_name}.jsonl"
         last_event = _read_last_event(event_path)
         if last_event:
-            print(f"  last_event: {last_event.get('type')} @ frame {last_event.get('frame')}")
+            ev_type = last_event.get("type")
+            ev_frame = last_event.get("frame")
+            print(f"  last_event: {ev_type} @ frame {ev_frame}")
+            if notify and ev_type in {
+                "early_stop",
+                "plateau_gate",
+                "plateau_action",
+                "progress_hit",
+                "progress_miss",
+            }:
+                key = f"{snap.env_name}-event"
+                if prev_alerts.get(key) != ev_frame:
+                    _notify(f"{snap.env_name}: {ev_type} @ frame {ev_frame}")
+                    prev_alerts[key] = ev_frame
 
     if min_avg_reward_delta and snapshots:
         for snap in snapshots:

@@ -42,6 +42,7 @@ Plateau gate (multi-objective) keys:
 Event logging:
 - `log_events`: write JSONL events to `reports/events_<env>.jsonl`.
 - `log_every_frames`: add heartbeat events every N frames.
+- `progress_targets`: list of `{frame, min_score, label}` checkpoints to log early progress hits/misses.
 
 Rainbow-Lite switches:
 - `dueling`: enable dueling value/advantage heads.

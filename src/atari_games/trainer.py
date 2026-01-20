@@ -252,6 +252,26 @@ def train_from_config(
     plateau_epsilon_boost = float(cfg["training"].get("plateau_epsilon_boost", 0.1))
     plateau_boost_frames = int(cfg["training"].get("plateau_boost_frames", 0))
     plateau_lr_decay = float(cfg["training"].get("plateau_lr_decay", 0.5))
+    progress_targets_raw = cfg["training"].get("progress_targets", [])
+    progress_targets = []
+    if isinstance(progress_targets_raw, list):
+        for item in progress_targets_raw:
+            if not isinstance(item, dict):
+                continue
+            if "frame" not in item or "min_score" not in item:
+                continue
+            try:
+                progress_targets.append(
+                    {
+                        "frame": int(item["frame"]),
+                        "min_score": float(item["min_score"]),
+                        "label": str(item.get("label", "")),
+                    }
+                )
+            except (TypeError, ValueError):
+                continue
+    progress_targets.sort(key=lambda x: x["frame"])
+    progress_index = 0
     plateau_state = PlateauState()
     rng = np.random.default_rng(seed + 123)
     per_beta_schedule = LinearSchedule(
@@ -369,6 +389,22 @@ def train_from_config(
                     "epsilon": agent.epsilon(),
                 },
             )
+            while progress_index < len(progress_targets) and frame >= progress_targets[progress_index]["frame"]:
+                target = progress_targets[progress_index]
+                passed = score >= target["min_score"]
+                _log_event(
+                    event_log_path,
+                    {
+                        "type": "progress_hit" if passed else "progress_miss",
+                        "frame": frame,
+                        "episode": episode,
+                        "score": score,
+                        "target_frame": target["frame"],
+                        "target_score": target["min_score"],
+                        "label": target.get("label", ""),
+                    },
+                )
+                progress_index += 1
             if early_stop_reward is not None and frame >= early_stop_min_frames:
                 if score >= float(early_stop_reward):
                     early_stop_hits += 1

@@ -35,17 +35,17 @@
     "total_frames": 10000000,
     "learning_starts": 20000,
     "update_every_frames": 1,
-    "eval_every_frames": 250000,
+    "eval_every_frames": 100000,
     "eval_episodes": 10,
     "eval_epsilon": 0.05,
-    "checkpoint_every_frames": 250000,
+    "checkpoint_every_frames": 100000,
     "log_events": true,
-    "log_every_frames": 20000,
+    "log_every_frames": 10000,
     "early_stop_avg_reward": 400,
     "early_stop_min_frames": 2000000,
     "early_stop_eval_windows": 2,
     "plateau_gate_enabled": true,
-    "plateau_min_frames": 2000000,
+    "plateau_min_frames": 500000,
     "plateau_eval_windows": 2,
     "plateau_perf_delta": 10,
     "plateau_perf_p_threshold": 0.2,
@@ -60,6 +60,13 @@
     "plateau_action_cooldown_frames": 500000,
     "plateau_epsilon_boost": 0.1,
     "plateau_boost_frames": 200000,
-    "plateau_lr_decay": 0.5
+    "plateau_lr_decay": 0.5,
+    "progress_targets": [
+      {"frame": 200000, "min_score": 5, "label": "early-signal"},
+      {"frame": 500000, "min_score": 20, "label": "ramp"},
+      {"frame": 1000000, "min_score": 50, "label": "midpoint"},
+      {"frame": 1500000, "min_score": 100, "label": "momentum"},
+      {"frame": 2000000, "min_score": 200, "label": "pre-strong"}
+    ]
   }
 }

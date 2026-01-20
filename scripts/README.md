@@ -14,6 +14,9 @@ Alerts + notifications (macOS):
 python scripts/monitor_runs.py --interval 60 --notify --stale-seconds 300 --min-avg-reward-delta 1
 ```
 
+The monitor will also notify on `progress_hit`, `progress_miss`, `plateau_gate`,
+and `early_stop` events from the training event log.
+
 One-shot snapshot:
 
 ```
