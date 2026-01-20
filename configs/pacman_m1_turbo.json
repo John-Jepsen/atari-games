@@ -41,6 +41,17 @@
     "checkpoint_every_frames": 250000,
     "early_stop_avg_reward": 1000,
     "early_stop_min_frames": 2000000,
-    "early_stop_eval_windows": 2
+    "early_stop_eval_windows": 2,
+    "plateau_gate_enabled": true,
+    "plateau_min_frames": 2000000,
+    "plateau_eval_windows": 2,
+    "plateau_perf_delta": 25,
+    "plateau_perf_p_threshold": 0.2,
+    "plateau_bootstrap_samples": 200,
+    "plateau_churn_threshold": 0.01,
+    "plateau_gap_delta": 0.0,
+    "plateau_td_improve_threshold": 0.0,
+    "plateau_probe_states": 256,
+    "td_error_ema_alpha": 0.05
   }
 }

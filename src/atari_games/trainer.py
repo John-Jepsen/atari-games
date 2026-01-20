@@ -29,6 +29,16 @@ class TrainResult:
     checkpoint_path: Path
 
 
+@dataclass
+class PlateauState:
+    prev_eval_returns: list[float] | None = None
+    prev_action_dist: np.ndarray | None = None
+    prev_adv_gap: float | None = None
+    prev_td_error: float | None = None
+    perf_hits: int = 0
+    gate_hits: int = 0
+
+
 def _write_metrics_header(path: Path) -> None:
     path.write_text("frame,episode,episode_reward,epsilon,loss\n")
 
@@ -36,6 +46,64 @@ def _write_metrics_header(path: Path) -> None:
 def _append_metrics(path: Path, frame: int, episode: int, reward: float, epsilon: float, loss: float) -> None:
     with path.open("a") as f:
         f.write(f"{frame},{episode},{reward:.3f},{epsilon:.4f},{loss:.6f}\n")
+
+
+def _bootstrap_p_improve(
+    current: list[float],
+    previous: list[float],
+    delta: float,
+    samples: int,
+    rng: np.random.Generator,
+) -> float:
+    if not current or not previous:
+        return 1.0
+    cur = np.array(current, dtype=np.float32)
+    prev = np.array(previous, dtype=np.float32)
+    cur_mean = cur.mean()
+    prev_mean = prev.mean()
+    if cur_mean > prev_mean + delta:
+        return 1.0
+    hits = 0
+    for _ in range(samples):
+        cur_bs = rng.choice(cur, size=cur.size, replace=True).mean()
+        prev_bs = rng.choice(prev, size=prev.size, replace=True).mean()
+        if cur_bs > prev_bs + delta:
+            hits += 1
+    return hits / float(samples)
+
+
+def _js_divergence(p: np.ndarray, q: np.ndarray, eps: float = 1e-8) -> float:
+    p = np.clip(p.astype(np.float64), eps, 1.0)
+    q = np.clip(q.astype(np.float64), eps, 1.0)
+    p = p / p.sum()
+    q = q / q.sum()
+    m = 0.5 * (p + q)
+    kl_pm = np.sum(p * np.log(p / m))
+    kl_qm = np.sum(q * np.log(q / m))
+    return float(0.5 * (kl_pm + kl_qm))
+
+
+def _action_distribution(q_values: torch.Tensor) -> np.ndarray:
+    actions = torch.argmax(q_values, dim=1).cpu().numpy()
+    num_actions = int(q_values.shape[1])
+    counts = np.bincount(actions, minlength=num_actions).astype(np.float64)
+    return counts / max(1, counts.sum())
+
+
+def _advantage_gap(q_values: torch.Tensor) -> float:
+    top2 = torch.topk(q_values, k=2, dim=1).values
+    gaps = (top2[:, 0] - top2[:, 1]).detach().cpu().numpy()
+    return float(np.median(gaps)) if gaps.size else 0.0
+
+
+def _sample_probe_states(buffer, num_states: int, device: torch.device):
+    if len(buffer) < max(2, num_states):
+        return None
+    if isinstance(buffer, (PrioritizedReplayBuffer, PrioritizedFrameStackReplayBuffer)):
+        sample = buffer.sample(num_states, device, beta=1.0)
+    else:
+        sample = buffer.sample(num_states, device)
+    return sample.obs
 
 
 def _build_agent(cfg: dict[str, Any], obs_shape: tuple[int, ...], num_actions: int, device: torch.device) -> DQNAgent:
@@ -150,6 +218,20 @@ def train_from_config(
     early_stop_min_frames = int(cfg["training"].get("early_stop_min_frames", 0))
     early_stop_eval_windows = int(cfg["training"].get("early_stop_eval_windows", 1))
     early_stop_hits = 0
+    td_error_ema = None
+    plateau_enabled = bool(cfg["training"].get("plateau_gate_enabled", False))
+    plateau_min_frames = int(cfg["training"].get("plateau_min_frames", 0))
+    plateau_eval_windows = int(cfg["training"].get("plateau_eval_windows", 2))
+    plateau_perf_delta = float(cfg["training"].get("plateau_perf_delta", 1.0))
+    plateau_perf_p_threshold = float(cfg["training"].get("plateau_perf_p_threshold", 0.2))
+    plateau_bootstrap_samples = int(cfg["training"].get("plateau_bootstrap_samples", 200))
+    plateau_churn_threshold = float(cfg["training"].get("plateau_churn_threshold", 0.01))
+    plateau_gap_delta = float(cfg["training"].get("plateau_gap_delta", 0.0))
+    plateau_td_improve_threshold = float(cfg["training"].get("plateau_td_improve_threshold", 0.0))
+    plateau_probe_states = int(cfg["training"].get("plateau_probe_states", 256))
+    td_error_ema_alpha = float(cfg["training"].get("td_error_ema_alpha", 0.05))
+    plateau_state = PlateauState()
+    rng = np.random.default_rng(seed + 123)
     per_beta_schedule = LinearSchedule(
         start=float(cfg["dqn"].get("per_beta_start", 0.4)),
         end=1.0,
@@ -205,6 +287,11 @@ def train_from_config(
             if isinstance(buffer, (PrioritizedReplayBuffer, PrioritizedFrameStackReplayBuffer)):
                 buffer.update_priorities(batch.indices, td_errors + 1e-6)
             losses.append(loss)
+            td_error_mean = float(np.mean(td_errors)) if td_errors.size else 0.0
+            if td_error_ema is None:
+                td_error_ema = td_error_mean
+            else:
+                td_error_ema = (1.0 - td_error_ema_alpha) * td_error_ema + td_error_ema_alpha * td_error_mean
             agent.maybe_update_target()
 
         if done:
@@ -231,13 +318,70 @@ def train_from_config(
             losses = []
 
         if eval_env and eval_every and frame % eval_every == 0:
-            score = evaluate_agent(agent, eval_env, eval_episodes, eval_epsilon, cfg.get("observation_type"))
+            score, returns = evaluate_agent(
+                agent,
+                eval_env,
+                eval_episodes,
+                eval_epsilon,
+                cfg.get("observation_type"),
+                return_returns=True,
+            )
             if early_stop_reward is not None and frame >= early_stop_min_frames:
                 if score >= float(early_stop_reward):
                     early_stop_hits += 1
                 else:
                     early_stop_hits = 0
                 if early_stop_hits >= early_stop_eval_windows:
+                    break
+
+            if plateau_enabled and frame >= plateau_min_frames:
+                p_improve = _bootstrap_p_improve(
+                    returns,
+                    plateau_state.prev_eval_returns or returns,
+                    plateau_perf_delta,
+                    plateau_bootstrap_samples,
+                    rng,
+                )
+                perf_plateau = p_improve < plateau_perf_p_threshold
+                if perf_plateau:
+                    plateau_state.perf_hits += 1
+                else:
+                    plateau_state.perf_hits = 0
+
+                probe = _sample_probe_states(buffer, plateau_probe_states, device)
+                churn_ok = True
+                gap_ok = True
+                td_ok = True
+                if probe is not None:
+                    with torch.no_grad():
+                        q_vals = agent.online_net(probe)
+                    action_dist = _action_distribution(q_vals)
+                    if plateau_state.prev_action_dist is not None:
+                        churn = _js_divergence(action_dist, plateau_state.prev_action_dist)
+                        churn_ok = churn < plateau_churn_threshold
+                    plateau_state.prev_action_dist = action_dist
+
+                    gap = _advantage_gap(q_vals)
+                    if plateau_state.prev_adv_gap is not None:
+                        gap_ok = (gap - plateau_state.prev_adv_gap) <= plateau_gap_delta
+                    plateau_state.prev_adv_gap = gap
+
+                if td_error_ema is not None and plateau_state.prev_td_error is not None:
+                    td_improve = plateau_state.prev_td_error - td_error_ema
+                    td_ok = td_improve <= plateau_td_improve_threshold
+                plateau_state.prev_td_error = td_error_ema
+
+                behavior_plateau = churn_ok
+                learning_plateau = gap_ok or td_ok
+
+                if perf_plateau and behavior_plateau and learning_plateau:
+                    plateau_state.gate_hits += 1
+                else:
+                    plateau_state.gate_hits = 0
+
+                plateau_state.prev_eval_returns = returns
+
+                if plateau_state.gate_hits >= plateau_eval_windows:
                     break
 
         if checkpoint_every and frame % checkpoint_every == 0:
@@ -247,7 +391,14 @@ def train_from_config(
     return TrainResult(metrics_path=metrics_path, checkpoint_path=checkpoint_path)
 
 
-def evaluate_agent(agent: DQNAgent, env, episodes: int, epsilon: float, observation_type: str | None = None) -> float:
+def evaluate_agent(
+    agent: DQNAgent,
+    env,
+    episodes: int,
+    epsilon: float,
+    observation_type: str | None = None,
+    return_returns: bool = False,
+) -> float | tuple[float, list[float]]:
     was_training = agent.online_net.training
     agent.online_net.eval()
     rewards = []
@@ -267,7 +418,10 @@ def evaluate_agent(agent: DQNAgent, env, episodes: int, epsilon: float, observat
         rewards.append(total)
     if was_training:
         agent.online_net.train()
-    return float(np.mean(rewards)) if rewards else 0.0
+    mean_score = float(np.mean(rewards)) if rewards else 0.0
+    if return_returns:
+        return mean_score, rewards
+    return mean_score
 
 
 def load_checkpoint(path: str, agent: DQNAgent) -> None:

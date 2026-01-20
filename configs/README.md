@@ -20,6 +20,19 @@ Turbo configs:
 - `*_m1_turbo.json` enable NoisyNet exploration and update every frame for faster learning.
   They include optional early-stop thresholds for strong performance targets.
 
+Plateau gate (multi-objective) keys:
+- `plateau_gate_enabled`: enable multi-signal plateau detection.
+- `plateau_min_frames`: wait before checks begin.
+- `plateau_eval_windows`: consecutive eval windows required to trigger.
+- `plateau_perf_delta`: minimum meaningful return improvement (ROPE).
+- `plateau_perf_p_threshold`: bootstrap P(improve) threshold.
+- `plateau_bootstrap_samples`: bootstrap resample count.
+- `plateau_churn_threshold`: JS divergence threshold for policy churn.
+- `plateau_gap_delta`: advantage-gap improvement threshold.
+- `plateau_td_improve_threshold`: TD-error improvement threshold.
+- `plateau_probe_states`: number of probe states sampled from replay.
+- `td_error_ema_alpha`: smoothing factor for TD-error EMA.
+
 Rainbow-Lite switches:
 - `dueling`: enable dueling value/advantage heads.
 - `noisy`: enable NoisyLinear exploration (epsilon still supported but optional).
