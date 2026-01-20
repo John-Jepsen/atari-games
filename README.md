@@ -28,6 +28,15 @@ python train/train_atari.py --config configs/space_invaders_m1_fast.json
 python train/train_atari.py --config configs/pacman_m1_fast.json
 ```
 
+Turbo (NoisyNet + update-every-frame + strong early stop targets):
+
+```
+. .venv/bin/activate
+python train/train_cartpole.py --config configs/cartpole_m1_turbo.json
+python train/train_atari.py --config configs/space_invaders_m1_turbo.json
+python train/train_atari.py --config configs/pacman_m1_turbo.json
+```
+
 ### The Core Team
 
 

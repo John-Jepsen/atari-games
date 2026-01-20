@@ -1,0 +1,32 @@
+{
+  "env_id": "CartPole-v1",
+  "seed": 42,
+  "device": "cpu",
+  "observation_type": "state",
+  "dqn": {
+    "gamma": 0.99,
+    "learning_rate": 0.0005,
+    "optimizer": "rmsprop",
+    "batch_size": 64,
+    "replay_capacity": 50000,
+    "target_update_steps": 500,
+    "epsilon_start": 1.0,
+    "epsilon_end": 0.05,
+    "epsilon_decay_frames": 50000,
+    "reward_clip": false,
+    "dueling": false,
+    "noisy": true,
+    "n_step": 3
+  },
+  "training": {
+    "total_frames": 200000,
+    "learning_starts": 1000,
+    "update_every_frames": 1,
+    "eval_every_frames": 20000,
+    "eval_episodes": 10,
+    "checkpoint_every_frames": 20000,
+    "early_stop_avg_reward": 475,
+    "early_stop_min_frames": 50000,
+    "early_stop_eval_windows": 2
+  }
+}

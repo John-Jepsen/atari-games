@@ -16,6 +16,10 @@ Fast M1 configs:
 - `*_m1_fast.json` favor wall-clock speed on Apple Silicon. They default to `cpu` because
   local benchmarks showed higher training FPS on CPU vs MPS for these workloads.
 
+Turbo configs:
+- `*_m1_turbo.json` enable NoisyNet exploration and update every frame for faster learning.
+  They include optional early-stop thresholds for strong performance targets.
+
 Rainbow-Lite switches:
 - `dueling`: enable dueling value/advantage heads.
 - `noisy`: enable NoisyLinear exploration (epsilon still supported but optional).

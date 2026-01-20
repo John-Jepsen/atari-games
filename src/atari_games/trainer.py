@@ -146,6 +146,10 @@ def train_from_config(
     checkpoint_every = int(cfg["training"].get("checkpoint_every_frames", 0) or 0)
     update_every = int(cfg["training"].get("update_every_frames", 1))
     reward_clip = bool(cfg.get("preprocess", {}).get("reward_clip", False))
+    early_stop_reward = cfg["training"].get("early_stop_avg_reward")
+    early_stop_min_frames = int(cfg["training"].get("early_stop_min_frames", 0))
+    early_stop_eval_windows = int(cfg["training"].get("early_stop_eval_windows", 1))
+    early_stop_hits = 0
     per_beta_schedule = LinearSchedule(
         start=float(cfg["dqn"].get("per_beta_start", 0.4)),
         end=1.0,
@@ -227,7 +231,14 @@ def train_from_config(
             losses = []
 
         if eval_env and eval_every and frame % eval_every == 0:
-            _ = evaluate_agent(agent, eval_env, eval_episodes, eval_epsilon, cfg.get("observation_type"))
+            score = evaluate_agent(agent, eval_env, eval_episodes, eval_epsilon, cfg.get("observation_type"))
+            if early_stop_reward is not None and frame >= early_stop_min_frames:
+                if score >= float(early_stop_reward):
+                    early_stop_hits += 1
+                else:
+                    early_stop_hits = 0
+                if early_stop_hits >= early_stop_eval_windows:
+                    break
 
         if checkpoint_every and frame % checkpoint_every == 0:
             _save_checkpoint(checkpoint_path, agent)
@@ -237,6 +248,7 @@ def train_from_config(
 
 
 def evaluate_agent(agent: DQNAgent, env, episodes: int, epsilon: float, observation_type: str | None = None) -> float:
+    was_training = agent.online_net.training
     agent.online_net.eval()
     rewards = []
     for _ in range(episodes):
@@ -253,7 +265,8 @@ def evaluate_agent(agent: DQNAgent, env, episodes: int, epsilon: float, observat
             obs = format_obs(to_numpy(next_obs), observation_type)
             total += reward
         rewards.append(total)
-    agent.online_net.train()
+    if was_training:
+        agent.online_net.train()
     return float(np.mean(rewards)) if rewards else 0.0
 
 
