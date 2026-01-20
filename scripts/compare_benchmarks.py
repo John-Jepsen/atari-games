@@ -203,7 +203,7 @@ def main() -> int:
 
     _summarize(results)
     report_path = _write_report(results, run_tag=run_tag, output_dir=Path("reports") / "benchmarks" / run_tag)
-    print(f\"\nWrote summary report to {report_path}\")
+    print(f"\nWrote summary report to {report_path}")
     return 0
 
 
