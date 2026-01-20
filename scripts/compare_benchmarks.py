@@ -87,6 +87,7 @@ def _write_report(results: list[dict[str, Any]], run_tag: str, output_dir: Path)
     frames = first.get("frames", "unknown")
     mode = first.get("mode", "unknown")
     timestamp = first.get("timestamp")
+    config_summary = first.get("config_summary", "")
 
     best_train = None
     train_candidates = [r for r in results if r.get("train_fps") is not None]
@@ -100,6 +101,7 @@ def _write_report(results: list[dict[str, Any]], run_tag: str, output_dir: Path)
         f"- timestamp: {timestamp}",
         f"- env_id: {env_id}",
         f"- config_path: {config_path}",
+        f"- config_summary: {config_summary}",
         f"- frames: {frames}",
         f"- mode: {mode}",
         "",
@@ -122,6 +124,34 @@ def _write_report(results: list[dict[str, Any]], run_tag: str, output_dir: Path)
                 "## Recommendation",
                 "",
                 f"Best training throughput: {best_train.get('device_used')} ({_format_fps(best_train.get('train_fps'))} fps).",
+            ]
+        )
+
+    # Simple bottleneck heuristic when both env and train FPS exist
+    bottleneck_notes = []
+    for payload in results:
+        env_fps = payload.get("env_fps")
+        train_fps = payload.get("train_fps")
+        device = payload.get("device_used")
+        if env_fps is None or train_fps is None or train_fps == 0:
+            continue
+        ratio = env_fps / train_fps if train_fps else 0.0
+        if ratio < 1.3:
+            bottleneck = "environment-bound"
+        elif ratio >= 2.0:
+            bottleneck = "training-bound"
+        else:
+            bottleneck = "mixed"
+        bottleneck_notes.append(f"- {device}: {bottleneck} (env/train ratio {ratio:.2f})")
+
+    if bottleneck_notes:
+        lines.extend(
+            [
+                "",
+                "## Bottleneck hints",
+                "",
+                "Heuristic based on env_fps vs train_fps (lower ratio means env likely dominates).",
+                *bottleneck_notes,
             ]
         )
 
