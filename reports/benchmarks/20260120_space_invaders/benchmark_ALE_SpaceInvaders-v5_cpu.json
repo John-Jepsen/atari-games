@@ -1,0 +1,17 @@
+{
+  "timestamp": 1768935026.442958,
+  "run_tag": "20260120_space_invaders",
+  "config_path": "configs/space_invaders.json",
+  "config_summary": "env_id=ALE/SpaceInvaders-v5, seed=42, gamma=0.99, replay_capacity=1000000, batch_size=32, total_frames=10000000",
+  "env_id": "ALE/SpaceInvaders-v5",
+  "device_request": "cpu",
+  "device_used": "cpu",
+  "frames": 5000,
+  "env_fps": 1924.0344691505536,
+  "train_fps": 252.33702036117714,
+  "env_seconds": 2.5987060420011403,
+  "train_seconds": 19.814769917007652,
+  "reports_dir": "reports/benchmarks/20260120_space_invaders/cpu",
+  "checkpoint_dir": "models/benchmarks/20260120_space_invaders/cpu",
+  "mode": "both"
+}

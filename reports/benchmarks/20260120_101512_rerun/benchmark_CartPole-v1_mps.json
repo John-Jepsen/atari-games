@@ -1,0 +1,17 @@
+{
+  "timestamp": 1768933130.367281,
+  "run_tag": "20260120_101512_rerun",
+  "config_path": "configs/cartpole.json",
+  "config_summary": "env_id=CartPole-v1, seed=42, gamma=0.99, replay_capacity=100000, batch_size=32, total_frames=500000",
+  "env_id": "CartPole-v1",
+  "device_request": "mps",
+  "device_used": "mps",
+  "frames": 5000,
+  "env_fps": 128777.05686017605,
+  "train_fps": 88.28059309750142,
+  "env_seconds": 0.03882679199159611,
+  "train_seconds": 56.63758958299877,
+  "reports_dir": "reports/benchmarks/20260120_101512_rerun/mps",
+  "checkpoint_dir": "models/benchmarks/20260120_101512_rerun/mps",
+  "mode": "both"
+}

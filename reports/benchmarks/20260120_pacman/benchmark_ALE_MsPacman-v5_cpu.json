@@ -1,0 +1,17 @@
+{
+  "timestamp": 1768935098.145227,
+  "run_tag": "20260120_pacman",
+  "config_path": "configs/pacman.json",
+  "config_summary": "env_id=ALE/MsPacman-v5, seed=42, gamma=0.99, replay_capacity=1000000, batch_size=32, total_frames=10000000",
+  "env_id": "ALE/MsPacman-v5",
+  "device_request": "cpu",
+  "device_used": "cpu",
+  "frames": 5000,
+  "env_fps": 1612.5816629806293,
+  "train_fps": 245.32014112838291,
+  "env_seconds": 3.1006181669945363,
+  "train_seconds": 20.381530749989906,
+  "reports_dir": "reports/benchmarks/20260120_pacman/cpu",
+  "checkpoint_dir": "models/benchmarks/20260120_pacman/cpu",
+  "mode": "both"
+}
