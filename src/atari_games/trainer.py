@@ -108,7 +108,11 @@ def _save_checkpoint(path: Path, agent: DQNAgent) -> None:
     torch.save(payload, path)
 
 
-def train_from_config(cfg: dict[str, Any], output_dir: str = "reports") -> TrainResult:
+def train_from_config(
+    cfg: dict[str, Any],
+    output_dir: str = "reports",
+    checkpoint_dir: str = "models",
+) -> TrainResult:
     seed = int(cfg.get("seed", 42))
     seed_everything(seed)
 
@@ -153,8 +157,8 @@ def train_from_config(cfg: dict[str, Any], output_dir: str = "reports") -> Train
     metrics_path = Path(output_dir) / f"metrics_{cfg['env_id'].replace('/', '_')}.csv"
     _write_metrics_header(metrics_path)
 
-    ensure_dir("models")
-    checkpoint_path = Path("models") / f"{cfg['env_id'].replace('/', '_')}_latest.pt"
+    ensure_dir(checkpoint_dir)
+    checkpoint_path = Path(checkpoint_dir) / f"{cfg['env_id'].replace('/', '_')}_latest.pt"
 
     episode = 0
     episode_reward = 0.0
