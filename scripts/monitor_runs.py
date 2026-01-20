@@ -229,6 +229,29 @@ def _read_last_event(path: Path) -> Optional[dict]:
         return None
 
 
+def _active_envs(pids: List[Tuple[str, int]]) -> set[str]:
+    envs = set()
+    for cmd, _ in pids:
+        if "train/train_cartpole.py" in cmd:
+            envs.add("CartPole-v1")
+        if "configs/space_invaders" in cmd:
+            envs.add("ALE_SpaceInvaders-v5")
+        if "configs/pacman" in cmd:
+            envs.add("ALE_MsPacman-v5")
+        if "train/train_atari.py" in cmd and "configs/" in cmd:
+            # Best-effort parse for custom config names
+            parts = cmd.split()
+            if "--config" in parts:
+                idx = parts.index("--config")
+                if idx + 1 < len(parts):
+                    cfg = Path(parts[idx + 1]).name
+                    if "space" in cfg and "invader" in cfg:
+                        envs.add("ALE_SpaceInvaders-v5")
+                    if "pacman" in cfg:
+                        envs.add("ALE_MsPacman-v5")
+    return envs
+
+
 def print_status(
     pids: List[Tuple[str, int]],
     snapshots: List[MetricSnapshot],
@@ -257,6 +280,7 @@ def print_status(
     if not snapshots:
         print("No metrics found.")
         return
+    active_envs = _active_envs(pids)
     for snap in snapshots:
         print(
             f"{snap.env_name}: episodes={snap.episodes} "
@@ -265,7 +289,7 @@ def print_status(
             f"updated={snap.updated_seconds_ago}s ago"
         )
         alert_key = f"{snap.env_name}-stale"
-        if stale_seconds and snap.updated_seconds_ago > stale_seconds:
+        if snap.env_name in active_envs and stale_seconds and snap.updated_seconds_ago > stale_seconds:
             msg = f"{snap.env_name} stalled (> {stale_seconds}s without updates)."
             print(f"ALERT: {msg}")
             if notify and not prev_alerts.get(alert_key):
@@ -281,6 +305,8 @@ def print_status(
 
     if min_avg_reward_delta and snapshots:
         for snap in snapshots:
+            if snap.env_name not in active_envs:
+                continue
             key = f"{snap.env_name}-avg"
             prev = prev_alerts.get(key)
             if prev is None:
