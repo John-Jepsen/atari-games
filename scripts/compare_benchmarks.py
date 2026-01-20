@@ -136,7 +136,7 @@ def _write_report(results: list[dict[str, Any]], run_tag: str, output_dir: Path)
         if env_fps is None or train_fps is None or train_fps == 0:
             continue
         ratio = env_fps / train_fps if train_fps else 0.0
-        if ratio < 1.3:
+        if ratio <= 1.2:
             bottleneck = "environment-bound"
         elif ratio >= 2.0:
             bottleneck = "training-bound"
@@ -150,7 +150,7 @@ def _write_report(results: list[dict[str, Any]], run_tag: str, output_dir: Path)
                 "",
                 "## Bottleneck hints",
                 "",
-                "Heuristic based on env_fps vs train_fps (lower ratio means env likely dominates).",
+                "Heuristic based on env_fps vs train_fps (higher ratio means training dominates).",
                 *bottleneck_notes,
             ]
         )
