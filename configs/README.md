@@ -12,6 +12,10 @@ Adjust `env_id` to match your Gymnasium/ALE installation.
 Device control:
 - `device`: set to `mps`, `cpu`, or `auto` (default). M1 users can force `mps` for GPU acceleration.
 
+Fast M1 configs:
+- `*_m1_fast.json` favor wall-clock speed on Apple Silicon. They default to `cpu` because
+  local benchmarks showed higher training FPS on CPU vs MPS for these workloads.
+
 Rainbow-Lite switches:
 - `dueling`: enable dueling value/advantage heads.
 - `noisy`: enable NoisyLinear exploration (epsilon still supported but optional).

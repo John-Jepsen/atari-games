@@ -144,6 +144,7 @@ def train_from_config(
     eval_epsilon = float(cfg["training"].get("eval_epsilon", 0.05))
     learning_starts = int(cfg["training"].get("learning_starts", 1000))
     checkpoint_every = int(cfg["training"].get("checkpoint_every_frames", 0) or 0)
+    update_every = int(cfg["training"].get("update_every_frames", 1))
     reward_clip = bool(cfg.get("preprocess", {}).get("reward_clip", False))
     per_beta_schedule = LinearSchedule(
         start=float(cfg["dqn"].get("per_beta_start", 0.4)),
@@ -190,7 +191,7 @@ def train_from_config(
         episode_reward += reward
 
         agent.step()
-        if frame > learning_starts and len(buffer) >= agent.config.batch_size:
+        if frame > learning_starts and len(buffer) >= agent.config.batch_size and frame % update_every == 0:
             beta = per_beta_schedule.value(frame)
             if isinstance(buffer, (PrioritizedReplayBuffer, PrioritizedFrameStackReplayBuffer)):
                 batch = buffer.sample(agent.config.batch_size, device, beta=beta)

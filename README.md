@@ -16,6 +16,18 @@ TODO - How does it work?
 ./my_project argument1 argument2
 ```
 
+### Fast training on M1 (CPU recommended)
+
+These configs apply the faster DQN settings and run on CPU, which benchmarks show
+is faster than MPS for this project.
+
+```
+. .venv/bin/activate
+python train/train_cartpole.py --config configs/cartpole_m1_fast.json
+python train/train_atari.py --config configs/space_invaders_m1_fast.json
+python train/train_atari.py --config configs/pacman_m1_fast.json
+```
+
 ### The Core Team
 
 

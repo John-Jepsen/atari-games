@@ -1,0 +1,43 @@
+{
+  "env_id": "ALE/SpaceInvaders-v5",
+  "seed": 42,
+  "device": "cpu",
+  "observation_type": "pixels",
+  "preprocess": {
+    "grayscale": true,
+    "resize_width": 84,
+    "resize_height": 84,
+    "frame_stack": 4,
+    "frame_skip": 4,
+    "reward_clip": true,
+    "terminal_on_life_loss": true,
+    "no_op_max": 30
+  },
+  "dqn": {
+    "gamma": 0.99,
+    "learning_rate": 0.00025,
+    "optimizer": "rmsprop",
+    "batch_size": 32,
+    "replay_capacity": 1000000,
+    "target_update_steps": 10000,
+    "epsilon_start": 1.0,
+    "epsilon_end": 0.1,
+    "epsilon_decay_frames": 500000,
+    "dueling": true,
+    "noisy": false,
+    "n_step": 3,
+    "per_alpha": 0.6,
+    "per_beta_start": 0.4,
+    "per_beta_frames": 10000000,
+    "efficient_replay": true
+  },
+  "training": {
+    "total_frames": 10000000,
+    "learning_starts": 20000,
+    "update_every_frames": 4,
+    "eval_every_frames": 250000,
+    "eval_episodes": 10,
+    "eval_epsilon": 0.05,
+    "checkpoint_every_frames": 250000
+  }
+}
