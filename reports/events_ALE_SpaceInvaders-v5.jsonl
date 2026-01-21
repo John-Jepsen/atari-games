@@ -1,0 +1,16 @@
+{"type": "start", "frame": 0, "env_id": "ALE/SpaceInvaders-v5", "timestamp": 1768945254.606884}
+{"type": "heartbeat", "frame": 10000, "episode": 52, "epsilon": 0.9525, "avg_loss": 0.0, "last_reward": 0.0, "timestamp": 1768945290.803786}
+{"type": "heartbeat", "frame": 20000, "episode": 105, "epsilon": 0.905, "avg_loss": 0.0, "last_reward": 11.0, "timestamp": 1768945326.528498}
+{"type": "heartbeat", "frame": 30000, "episode": 165, "epsilon": 0.8575, "avg_loss": 0.004144339515523125, "last_reward": 3.0, "timestamp": 1768946325.7615428}
+{"type": "heartbeat", "frame": 40000, "episode": 215, "epsilon": 0.81, "avg_loss": 0.003726799002623654, "last_reward": 3.0, "timestamp": 1768947338.1405718}
+{"type": "heartbeat", "frame": 50000, "episode": 261, "epsilon": 0.7625000000000001, "avg_loss": 0.005240334304592882, "last_reward": 0.0, "timestamp": 1768948335.623143}
+{"type": "heartbeat", "frame": 60000, "episode": 311, "epsilon": 0.7150000000000001, "avg_loss": 0.004378781342007316, "last_reward": 6.0, "timestamp": 1768949342.515557}
+{"type": "heartbeat", "frame": 70000, "episode": 359, "epsilon": 0.6675, "avg_loss": 0.006001400229710657, "last_reward": 3.0, "timestamp": 1768950349.406949}
+{"type": "heartbeat", "frame": 80000, "episode": 406, "epsilon": 0.6200000000000001, "avg_loss": 0.00793771920439334, "last_reward": 15.0, "timestamp": 1768951382.248498}
+{"type": "heartbeat", "frame": 90000, "episode": 448, "epsilon": 0.5725, "avg_loss": 0.013175640601000868, "last_reward": 5.0, "timestamp": 1768952424.807837}
+{"type": "eval", "frame": 100000, "episode": 488, "score": 94.5, "epsilon": 0.5250000000000001, "timestamp": 1768953484.887594}
+{"type": "heartbeat", "frame": 100000, "episode": 488, "epsilon": 0.5250000000000001, "avg_loss": 0.020988069377560762, "last_reward": 11.0, "timestamp": 1768953484.990029}
+{"type": "heartbeat", "frame": 110000, "episode": 537, "epsilon": 0.47750000000000004, "avg_loss": 0.023981811939754162, "last_reward": 5.0, "timestamp": 1768954519.81481}
+{"type": "heartbeat", "frame": 120000, "episode": 576, "epsilon": 0.43000000000000005, "avg_loss": 0.024405698119865163, "last_reward": 5.0, "timestamp": 1768955563.5083551}
+{"type": "heartbeat", "frame": 130000, "episode": 613, "epsilon": 0.38250000000000006, "avg_loss": 0.023449955929725153, "last_reward": 6.0, "timestamp": 1768956628.4826958}
+{"type": "heartbeat", "frame": 140000, "episode": 660, "epsilon": 0.3350000000000001, "avg_loss": 0.021785000590459694, "last_reward": 15.0, "timestamp": 1768957718.937768}
