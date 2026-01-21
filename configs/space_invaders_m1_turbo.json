@@ -34,13 +34,13 @@
   "training": {
     "total_frames": 10000000,
     "learning_starts": 20000,
-    "update_every_frames": 1,
-    "eval_every_frames": 100000,
-    "eval_episodes": 10,
+    "update_every_frames": 4,
+    "eval_every_frames": 200000,
+    "eval_episodes": 5,
     "eval_epsilon": 0.05,
-    "checkpoint_every_frames": 100000,
+    "checkpoint_every_frames": 200000,
     "log_events": true,
-    "log_every_frames": 10000,
+    "log_every_frames": 20000,
     "early_stop_avg_reward": 400,
     "early_stop_min_frames": 2000000,
     "early_stop_eval_windows": 2,
@@ -67,6 +67,8 @@
       {"frame": 1000000, "min_score": 50, "label": "midpoint"},
       {"frame": 1500000, "min_score": 100, "label": "momentum"},
       {"frame": 2000000, "min_score": 200, "label": "pre-strong"}
-    ]
+    ],
+    "num_threads": 8,
+    "interop_threads": 2
   }
 }
