@@ -182,6 +182,7 @@ def _save_checkpoint(path: Path, agent: DQNAgent) -> None:
     payload = {
         "model_state": agent.online_net.state_dict(),
         "steps_done": agent.steps_done,
+        "optimizer_state": agent.optimizer.state_dict(),
     }
     torch.save(payload, path)
 
@@ -288,9 +289,25 @@ def train_from_config(
     n_step_buffer = deque(maxlen=n_step)
     epsilon_boost_until = 0
 
+    resume_from = cfg["training"].get("resume_from")
+    resume_metrics = bool(cfg["training"].get("resume_metrics", False))
+    start_frame = 0
+    if resume_from:
+        load_checkpoint(str(resume_from), agent, optimizer=agent.optimizer)
+        start_frame = int(agent.steps_done)
+        _log_event(
+            event_log_path,
+            {
+                "type": "resume",
+                "frame": start_frame,
+                "env_id": cfg["env_id"],
+                "checkpoint": str(resume_from),
+            },
+        )
     ensure_dir(output_dir)
     metrics_path = Path(output_dir) / f"metrics_{cfg['env_id'].replace('/', '_')}.csv"
-    _write_metrics_header(metrics_path)
+    if not (resume_metrics and metrics_path.exists()):
+        _write_metrics_header(metrics_path)
 
     ensure_dir(checkpoint_dir)
     checkpoint_path = Path(checkpoint_dir) / f"{cfg['env_id'].replace('/', '_')}_latest.pt"
@@ -302,7 +319,10 @@ def train_from_config(
     if log_every:
         _log_event(event_log_path, {"type": "start", "frame": 0, "env_id": cfg["env_id"]})
 
-    for frame in range(1, total_frames + 1):
+    if start_frame >= total_frames:
+        return TrainResult(metrics_path=metrics_path, checkpoint_path=checkpoint_path)
+
+    for frame in range(start_frame + 1, total_frames + 1):
         agent.reset_noise()
         if frame <= epsilon_boost_until:
             if np.random.rand() < plateau_epsilon_boost:
@@ -581,11 +601,13 @@ def evaluate_agent(
     return mean_score
 
 
-def load_checkpoint(path: str, agent: DQNAgent) -> None:
+def load_checkpoint(path: str, agent: DQNAgent, optimizer: torch.optim.Optimizer | None = None) -> None:
     payload = torch.load(path, map_location=agent.device)
     agent.online_net.load_state_dict(payload["model_state"])
     agent.target_net.load_state_dict(payload["model_state"])
     agent.steps_done = payload.get("steps_done", 0)
+    if optimizer is not None and "optimizer_state" in payload:
+        optimizer.load_state_dict(payload["optimizer_state"])
 
 
 def dump_run_summary(cfg: dict[str, Any], result: TrainResult, output_path: str = "reports/run_summary.json") -> None:

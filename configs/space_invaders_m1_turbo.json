@@ -69,6 +69,8 @@
       {"frame": 2000000, "min_score": 200, "label": "pre-strong"}
     ],
     "num_threads": 8,
-    "interop_threads": 2
+    "interop_threads": 2,
+    "resume_from": "models/ALE_SpaceInvaders-v5_latest.pt",
+    "resume_metrics": true
   }
 }

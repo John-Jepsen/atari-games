@@ -48,6 +48,10 @@ Thread tuning:
 - `num_threads`: sets `torch.set_num_threads` and `OMP_NUM_THREADS`/`MKL_NUM_THREADS`.
 - `interop_threads`: sets `torch.set_num_interop_threads`.
 
+Resume training:
+- `resume_from`: checkpoint path to warm-start a run.
+- `resume_metrics`: append to existing metrics file instead of overwriting.
+
 Rainbow-Lite switches:
 - `dueling`: enable dueling value/advantage heads.
 - `noisy`: enable NoisyLinear exploration (epsilon still supported but optional).
