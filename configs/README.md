@@ -49,7 +49,8 @@ Thread tuning:
 - `interop_threads`: sets `torch.set_num_interop_threads`.
 
 Max-speed config:
-- `pacman_m1_max.json`: single-run, CPU-thread tuned Ms Pac-Man config for fastest wall-clock training.
+- `pacman_m1_max.json`: MPS-first Ms Pac-Man config tuned for wall-clock speed
+  (reduced update/eval cadence, smaller replay, PER/Noisy off).
 
 Rainbow-Lite switches:
 - `dueling`: enable dueling value/advantage heads.
