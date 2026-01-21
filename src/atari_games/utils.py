@@ -66,6 +66,15 @@ def get_device(requested: str | None = None) -> torch.device:
     return torch.device("cpu")
 
 
+def configure_threads(num_threads: int | None = None, interop_threads: int | None = None) -> None:
+    if num_threads:
+        os.environ.setdefault("OMP_NUM_THREADS", str(num_threads))
+        os.environ.setdefault("MKL_NUM_THREADS", str(num_threads))
+        torch.set_num_threads(int(num_threads))
+    if interop_threads:
+        torch.set_num_interop_threads(int(interop_threads))
+
+
 def ensure_dir(path: str) -> None:
     os.makedirs(path, exist_ok=True)
 

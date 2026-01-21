@@ -44,6 +44,13 @@ Event logging:
 - `log_every_frames`: add heartbeat events every N frames.
 - `progress_targets`: list of `{frame, min_score, label}` checkpoints to log early progress hits/misses.
 
+Thread tuning:
+- `num_threads`: sets `torch.set_num_threads` and `OMP_NUM_THREADS`/`MKL_NUM_THREADS`.
+- `interop_threads`: sets `torch.set_num_interop_threads`.
+
+Max-speed config:
+- `pacman_m1_max.json`: single-run, CPU-thread tuned Ms Pac-Man config for fastest wall-clock training.
+
 Rainbow-Lite switches:
 - `dueling`: enable dueling value/advantage heads.
 - `noisy`: enable NoisyLinear exploration (epsilon still supported but optional).

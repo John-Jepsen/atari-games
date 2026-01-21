@@ -14,6 +14,7 @@ Push the M1 as hard as possible for Ms. Pac-Man while keeping results reliable e
   - `torch.set_num_interop_threads(M)`
   - Env vars: `OMP_NUM_THREADS`, `MKL_NUM_THREADS`
 - Use **CPU** (benchmarks show CPU faster than MPS for this project).
+ - Use config: `configs/pacman_m1_max.json`.
 
 ## Training throughput (speed)
 - `update_every_frames = 1`

@@ -37,6 +37,13 @@ python train/train_atari.py --config configs/space_invaders_m1_turbo.json
 python train/train_atari.py --config configs/pacman_m1_turbo.json
 ```
 
+Max-speed Pac-Man (CPU thread tuned):
+
+```
+. .venv/bin/activate
+python train/train_atari.py --config configs/pacman_m1_max.json
+```
+
 ### The Core Team
 
 

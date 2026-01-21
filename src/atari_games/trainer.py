@@ -20,7 +20,7 @@ from .replay import (
     PrioritizedReplayBuffer,
     ReplayBuffer,
 )
-from .utils import LinearSchedule, ensure_dir, get_device, seed_everything, to_numpy
+from .utils import LinearSchedule, configure_threads, ensure_dir, get_device, seed_everything, to_numpy
 
 
 @dataclass
@@ -193,6 +193,11 @@ def train_from_config(
 ) -> TrainResult:
     seed = int(cfg.get("seed", 42))
     seed_everything(seed)
+    training_cfg = cfg.get("training", {})
+    configure_threads(
+        training_cfg.get("num_threads"),
+        training_cfg.get("interop_threads"),
+    )
 
     device = get_device(cfg.get("device"))
 
@@ -295,7 +300,16 @@ def train_from_config(
     losses = []
     last_episode_reward = 0.0
     if log_every:
-        _log_event(event_log_path, {"type": "start", "frame": 0, "env_id": cfg["env_id"]})
+        _log_event(
+            event_log_path,
+            {
+                "type": "start",
+                "frame": 0,
+                "env_id": cfg["env_id"],
+                "num_threads": training_cfg.get("num_threads"),
+                "interop_threads": training_cfg.get("interop_threads"),
+            },
+        )
 
     for frame in range(1, total_frames + 1):
         agent.reset_noise()
