@@ -2,9 +2,9 @@
 
 Collected observations to address before the next training session:
 
-## Mismatches
-- `dqn.optimizer` config key is ignored; trainer always builds `torch.optim.RMSprop` in `_build_agent`.
-- DQN-level `reward_clip` flag (present in CartPole configs) is unused; reward clipping only follows `preprocess.reward_clip`.
+## Mismatches (RESOLVED)
+- ~~`dqn.optimizer` config key is ignored~~ - Fixed: trainer now supports "rmsprop", "adam", "sgd"
+- ~~DQN-level `reward_clip` flag is unused~~ - Fixed: trainer checks both `dqn.reward_clip` and `preprocess.reward_clip`
 
 ## Stability TODOs
 - Consider optional gradient clipping (e.g., max-norm 10.0) inside `DQNAgent.update` to tame rare PER + NoisyNet spikes.

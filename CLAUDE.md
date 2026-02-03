@@ -72,8 +72,8 @@ python eval/eval_agent.py --model models/CartPole-v1_latest.pt --env CartPole-v1
 ## Config Notes
 - CPU is faster than MPS for this workload on Apple Silicon
 - Thread tuning: `OMP_NUM_THREADS=10` for max throughput
-- `preprocess.reward_clip` controls reward clipping (not `dqn.reward_clip`)
-- `dqn.optimizer` config key is currently ignored; RMSprop hardcoded
+- `dqn.optimizer`: supports "rmsprop" (default), "adam", "sgd"
+- `dqn.reward_clip` or `preprocess.reward_clip`: either location works
 
 ## Testing
 No test suite yet. Smoke test with:
@@ -99,4 +99,4 @@ All three models are trained:
 |------|--------|----------|--------------|------------|
 | CartPole | 200k | 1,655 | 22-262 | `models/CartPole-v1_latest.pt` |
 | Space Invaders | 2.4M | 4,326 | 23-35 | `models/ALE_SpaceInvaders-v5_latest.pt` |
-| Pac-Man (max) | 2.6M | 6,852 | 68-119 | `reports/pacman_runs/.../max/models/ALE_MsPacman-v5_latest.pt` |
+| Pac-Man (max) | 2.6M | 6,852 | 68-119 | `models/ALE_MsPacman-v5_latest.pt` |

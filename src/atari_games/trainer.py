@@ -147,7 +147,13 @@ def _build_agent(cfg: dict[str, Any], obs_shape: tuple[int, ...], num_actions: i
             online = DQNMLP(input_dim=input_dim, num_actions=num_actions).to(device)
             target = DQNMLP(input_dim=input_dim, num_actions=num_actions).to(device)
 
-    optimizer = torch.optim.RMSprop(online.parameters(), lr=agent_cfg.learning_rate)
+    optimizer_name = dqn_cfg.get("optimizer", "rmsprop").lower()
+    if optimizer_name == "adam":
+        optimizer = torch.optim.Adam(online.parameters(), lr=agent_cfg.learning_rate)
+    elif optimizer_name == "sgd":
+        optimizer = torch.optim.SGD(online.parameters(), lr=agent_cfg.learning_rate)
+    else:  # default to rmsprop
+        optimizer = torch.optim.RMSprop(online.parameters(), lr=agent_cfg.learning_rate)
     return DQNAgent(online, target, optimizer, agent_cfg, device)
 
 
@@ -229,7 +235,10 @@ def train_from_config(
     learning_starts = int(cfg["training"].get("learning_starts", 1000))
     checkpoint_every = int(cfg["training"].get("checkpoint_every_frames", 0) or 0)
     update_every = int(cfg["training"].get("update_every_frames", 1))
-    reward_clip = bool(cfg.get("preprocess", {}).get("reward_clip", False))
+    reward_clip = bool(
+        cfg.get("preprocess", {}).get("reward_clip", False)
+        or cfg.get("dqn", {}).get("reward_clip", False)
+    )
     early_stop_reward = cfg["training"].get("early_stop_avg_reward")
     early_stop_min_frames = int(cfg["training"].get("early_stop_min_frames", 0))
     early_stop_eval_windows = int(cfg["training"].get("early_stop_eval_windows", 1))
