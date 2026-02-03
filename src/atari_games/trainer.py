@@ -317,7 +317,16 @@ def train_from_config(
     losses = []
     last_episode_reward = 0.0
     if log_every:
-        _log_event(event_log_path, {"type": "start", "frame": 0, "env_id": cfg["env_id"]})
+        _log_event(
+            event_log_path,
+            {
+                "type": "start",
+                "frame": 0,
+                "env_id": cfg["env_id"],
+                "num_threads": training_cfg.get("num_threads"),
+                "interop_threads": training_cfg.get("interop_threads"),
+            },
+        )
 
     if start_frame >= total_frames:
         return TrainResult(metrics_path=metrics_path, checkpoint_path=checkpoint_path)

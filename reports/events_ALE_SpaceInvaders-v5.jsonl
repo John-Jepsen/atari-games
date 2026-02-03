@@ -14,3 +14,170 @@
 {"type": "heartbeat", "frame": 120000, "episode": 576, "epsilon": 0.43000000000000005, "avg_loss": 0.024405698119865163, "last_reward": 5.0, "timestamp": 1768955563.5083551}
 {"type": "heartbeat", "frame": 130000, "episode": 613, "epsilon": 0.38250000000000006, "avg_loss": 0.023449955929725153, "last_reward": 6.0, "timestamp": 1768956628.4826958}
 {"type": "heartbeat", "frame": 140000, "episode": 660, "epsilon": 0.3350000000000001, "avg_loss": 0.021785000590459694, "last_reward": 15.0, "timestamp": 1768957718.937768}
+{"type": "heartbeat", "frame": 150000, "episode": 709, "epsilon": 0.2875000000000001, "avg_loss": 0.02661814344012075, "last_reward": 12.0, "timestamp": 1768958838.69804}
+{"type": "heartbeat", "frame": 160000, "episode": 761, "epsilon": 0.2400000000000001, "avg_loss": 0.02819230195496287, "last_reward": 10.0, "timestamp": 1768959903.454396}
+{"type": "heartbeat", "frame": 170000, "episode": 809, "epsilon": 0.19250000000000012, "avg_loss": 0.03352627449757641, "last_reward": 10.0, "timestamp": 1768961013.117177}
+{"type": "heartbeat", "frame": 180000, "episode": 857, "epsilon": 0.14500000000000013, "avg_loss": 0.02807979215064953, "last_reward": 9.0, "timestamp": 1768962055.054091}
+{"type": "heartbeat", "frame": 190000, "episode": 914, "epsilon": 0.09750000000000014, "avg_loss": 0.03822757364190244, "last_reward": 15.0, "timestamp": 1768963093.860945}
+{"type": "eval", "frame": 200000, "episode": 964, "score": 68.5, "epsilon": 0.05, "timestamp": 1768964110.71456}
+{"type": "progress_hit", "frame": 200000, "episode": 964, "score": 68.5, "target_frame": 200000, "target_score": 5.0, "label": "early-signal", "timestamp": 1768964110.716}
+{"type": "heartbeat", "frame": 200000, "episode": 964, "epsilon": 0.05, "avg_loss": 0.03738253889340823, "last_reward": 7.0, "timestamp": 1768964110.7670841}
+{"type": "heartbeat", "frame": 210000, "episode": 1024, "epsilon": 0.05, "avg_loss": 0.0324734660351406, "last_reward": 4.0, "timestamp": 1768965135.77245}
+{"type": "heartbeat", "frame": 220000, "episode": 1068, "epsilon": 0.05, "avg_loss": 0.037780316868498004, "last_reward": 18.0, "timestamp": 1768966166.7363892}
+{"type": "heartbeat", "frame": 230000, "episode": 1107, "epsilon": 0.05, "avg_loss": 0.034434797272818986, "last_reward": 10.0, "timestamp": 1768967184.22613}
+{"type": "heartbeat", "frame": 240000, "episode": 1153, "epsilon": 0.05, "avg_loss": 0.03677683869661514, "last_reward": 7.0, "timestamp": 1768968201.943997}
+{"type": "heartbeat", "frame": 250000, "episode": 1199, "epsilon": 0.05, "avg_loss": 0.035081214094855664, "last_reward": 18.0, "timestamp": 1768969197.682959}
+{"type": "heartbeat", "frame": 260000, "episode": 1247, "epsilon": 0.05, "avg_loss": 0.03334047193121579, "last_reward": 2.0, "timestamp": 1768970193.4536052}
+{"type": "heartbeat", "frame": 270000, "episode": 1292, "epsilon": 0.05, "avg_loss": 0.035881261291968475, "last_reward": 9.0, "timestamp": 1768971184.994417}
+{"type": "heartbeat", "frame": 280000, "episode": 1334, "epsilon": 0.05, "avg_loss": 0.03572574767391556, "last_reward": 5.0, "timestamp": 1768972177.761339}
+{"type": "heartbeat", "frame": 290000, "episode": 1367, "epsilon": 0.05, "avg_loss": 0.03779389998865324, "last_reward": 12.0, "timestamp": 1768973170.881542}
+{"type": "eval", "frame": 300000, "episode": 1410, "score": 156.0, "epsilon": 0.05, "timestamp": 1768974164.713142}
+{"type": "heartbeat", "frame": 300000, "episode": 1410, "epsilon": 0.05, "avg_loss": 0.037615111758632046, "last_reward": 9.0, "timestamp": 1768974164.764589}
+{"type": "heartbeat", "frame": 310000, "episode": 1449, "epsilon": 0.05, "avg_loss": 0.03838432948429917, "last_reward": 11.0, "timestamp": 1768975158.149886}
+{"type": "heartbeat", "frame": 320000, "episode": 1485, "epsilon": 0.05, "avg_loss": 0.037344363518059254, "last_reward": 16.0, "timestamp": 1768976148.87494}
+{"type": "heartbeat", "frame": 330000, "episode": 1525, "epsilon": 0.05, "avg_loss": 0.0408825917411747, "last_reward": 19.0, "timestamp": 1768977138.453239}
+{"type": "heartbeat", "frame": 340000, "episode": 1563, "epsilon": 0.05, "avg_loss": 0.03549691020409659, "last_reward": 9.0, "timestamp": 1768978130.504201}
+{"type": "heartbeat", "frame": 350000, "episode": 1597, "epsilon": 0.05, "avg_loss": 0.03543000350668596, "last_reward": 14.0, "timestamp": 1768979120.684716}
+{"type": "heartbeat", "frame": 360000, "episode": 1638, "epsilon": 0.05, "avg_loss": 0.038045869619285654, "last_reward": 18.0, "timestamp": 1768980112.151285}
+{"type": "heartbeat", "frame": 370000, "episode": 1680, "epsilon": 0.05, "avg_loss": 0.04562196175207977, "last_reward": 7.0, "timestamp": 1768981104.7458189}
+{"type": "heartbeat", "frame": 380000, "episode": 1721, "epsilon": 0.05, "avg_loss": 0.04363255714997649, "last_reward": 12.0, "timestamp": 1768982095.739244}
+{"type": "heartbeat", "frame": 390000, "episode": 1761, "epsilon": 0.05, "avg_loss": 0.04830619728891179, "last_reward": 16.0, "timestamp": 1768983088.19738}
+{"type": "eval", "frame": 400000, "episode": 1805, "score": 147.0, "epsilon": 0.05, "timestamp": 1768984082.7357252}
+{"type": "heartbeat", "frame": 400000, "episode": 1805, "epsilon": 0.05, "avg_loss": 0.044515779005809566, "last_reward": 7.0, "timestamp": 1768984082.781684}
+{"type": "heartbeat", "frame": 410000, "episode": 1845, "epsilon": 0.05, "avg_loss": 0.042052147444337606, "last_reward": 15.0, "timestamp": 1768985074.43069}
+{"type": "heartbeat", "frame": 420000, "episode": 1881, "epsilon": 0.05, "avg_loss": 0.04774617541115731, "last_reward": 13.0, "timestamp": 1768986068.763136}
+{"type": "heartbeat", "frame": 430000, "episode": 1929, "epsilon": 0.05, "avg_loss": 0.04928253451362252, "last_reward": 17.0, "timestamp": 1768987064.5436301}
+{"type": "heartbeat", "frame": 440000, "episode": 1970, "epsilon": 0.05, "avg_loss": 0.056679344427986784, "last_reward": 19.0, "timestamp": 1768988055.8781598}
+{"type": "heartbeat", "frame": 450000, "episode": 2017, "epsilon": 0.05, "avg_loss": 0.051925107883289454, "last_reward": 13.0, "timestamp": 1768989047.5435011}
+{"type": "heartbeat", "frame": 460000, "episode": 2060, "epsilon": 0.05, "avg_loss": 0.07036618868241439, "last_reward": 12.0, "timestamp": 1768990040.1343439}
+{"type": "heartbeat", "frame": 470000, "episode": 2098, "epsilon": 0.05, "avg_loss": 0.06172815990065322, "last_reward": 10.0, "timestamp": 1768991031.6860092}
+{"type": "heartbeat", "frame": 480000, "episode": 2141, "epsilon": 0.05, "avg_loss": 0.05695763365086597, "last_reward": 14.0, "timestamp": 1768992023.93754}
+{"type": "heartbeat", "frame": 490000, "episode": 2184, "epsilon": 0.05, "avg_loss": 0.05990078149837737, "last_reward": 15.0, "timestamp": 1768993016.612788}
+{"type": "eval", "frame": 500000, "episode": 2221, "score": 138.5, "epsilon": 0.05, "timestamp": 1768994011.932433}
+{"type": "progress_hit", "frame": 500000, "episode": 2221, "score": 138.5, "target_frame": 500000, "target_score": 20.0, "label": "ramp", "timestamp": 1768994011.932841}
+{"type": "heartbeat", "frame": 500000, "episode": 2221, "epsilon": 0.05, "avg_loss": 0.057611971975258386, "last_reward": 12.0, "timestamp": 1768994011.9768052}
+{"type": "heartbeat", "frame": 510000, "episode": 2258, "epsilon": 0.05, "avg_loss": 0.05955590376843768, "last_reward": 7.0, "timestamp": 1768995005.2515688}
+{"type": "heartbeat", "frame": 520000, "episode": 2303, "epsilon": 0.05, "avg_loss": 0.06572245836973527, "last_reward": 8.0, "timestamp": 1768995999.585249}
+{"type": "heartbeat", "frame": 530000, "episode": 2345, "epsilon": 0.05, "avg_loss": 0.06348782121674733, "last_reward": 14.0, "timestamp": 1768996993.037031}
+{"type": "heartbeat", "frame": 540000, "episode": 2387, "epsilon": 0.05, "avg_loss": 0.06324090357964575, "last_reward": 13.0, "timestamp": 1768997986.566505}
+{"type": "heartbeat", "frame": 550000, "episode": 2422, "epsilon": 0.05, "avg_loss": 0.05356178764144287, "last_reward": 14.0, "timestamp": 1768998987.655149}
+{"type": "heartbeat", "frame": 560000, "episode": 2456, "epsilon": 0.05, "avg_loss": 0.06358053101072635, "last_reward": 7.0, "timestamp": 1768999981.400107}
+{"type": "heartbeat", "frame": 570000, "episode": 2489, "epsilon": 0.05, "avg_loss": 0.06595244048497616, "last_reward": 24.0, "timestamp": 1769000975.633593}
+{"type": "heartbeat", "frame": 580000, "episode": 2522, "epsilon": 0.05, "avg_loss": 0.06747565832841447, "last_reward": 12.0, "timestamp": 1769001969.258199}
+{"type": "heartbeat", "frame": 590000, "episode": 2552, "epsilon": 0.05, "avg_loss": 0.061385851373590365, "last_reward": 16.0, "timestamp": 1769002962.746582}
+{"type": "eval", "frame": 600000, "episode": 2586, "score": 233.0, "epsilon": 0.05, "timestamp": 1769003959.168637}
+{"type": "heartbeat", "frame": 600000, "episode": 2586, "epsilon": 0.05, "avg_loss": 0.07756845448571055, "last_reward": 11.0, "timestamp": 1769003959.521269}
+{"type": "heartbeat", "frame": 610000, "episode": 2618, "epsilon": 0.05, "avg_loss": 0.06710609081732546, "last_reward": 19.0, "timestamp": 1769004957.215383}
+{"type": "heartbeat", "frame": 620000, "episode": 2654, "epsilon": 0.05, "avg_loss": 0.0626133727651056, "last_reward": 23.0, "timestamp": 1769005955.9439738}
+{"type": "heartbeat", "frame": 630000, "episode": 2684, "epsilon": 0.05, "avg_loss": 0.06827266355646791, "last_reward": 18.0, "timestamp": 1769006953.6929028}
+{"type": "heartbeat", "frame": 640000, "episode": 2717, "epsilon": 0.05, "avg_loss": 0.07255340542365364, "last_reward": 18.0, "timestamp": 1769007950.033022}
+{"type": "start", "frame": 0, "env_id": "ALE/SpaceInvaders-v5", "timestamp": 1769008696.6420412}
+{"type": "heartbeat", "frame": 20000, "episode": 105, "epsilon": 0.905, "avg_loss": 0.0, "last_reward": 11.0, "timestamp": 1769008773.235849}
+{"type": "heartbeat", "frame": 40000, "episode": 208, "epsilon": 0.81, "avg_loss": 0.021247810986415858, "last_reward": 5.0, "timestamp": 1769009405.967071}
+{"type": "heartbeat", "frame": 60000, "episode": 314, "epsilon": 0.7150000000000001, "avg_loss": 0.014868887733124817, "last_reward": 6.0, "timestamp": 1769010026.169971}
+{"type": "resume", "frame": 600000, "env_id": "ALE/SpaceInvaders-v5", "checkpoint": "models/ALE_SpaceInvaders-v5_latest.pt", "timestamp": 1769010316.7884312}
+{"type": "start", "frame": 0, "env_id": "ALE/SpaceInvaders-v5", "timestamp": 1769010316.788741}
+{"type": "heartbeat", "frame": 620000, "episode": 74, "epsilon": 0.05, "avg_loss": 0.04590136694411437, "last_reward": 13.0, "timestamp": 1769010866.609041}
+{"type": "heartbeat", "frame": 640000, "episode": 135, "epsilon": 0.05, "avg_loss": 0.040301898891544514, "last_reward": 20.0, "timestamp": 1769011412.386855}
+{"type": "heartbeat", "frame": 660000, "episode": 195, "epsilon": 0.05, "avg_loss": 0.052959159947931767, "last_reward": 21.0, "timestamp": 1769011955.987829}
+{"type": "heartbeat", "frame": 680000, "episode": 251, "epsilon": 0.05, "avg_loss": 0.04147801613069925, "last_reward": 29.0, "timestamp": 1769012500.1594172}
+{"type": "heartbeat", "frame": 700000, "episode": 309, "epsilon": 0.05, "avg_loss": 0.0406860989711151, "last_reward": 27.0, "timestamp": 1769013046.832426}
+{"type": "heartbeat", "frame": 720000, "episode": 368, "epsilon": 0.05, "avg_loss": 0.04914110585156342, "last_reward": 18.0, "timestamp": 1769013592.141762}
+{"type": "heartbeat", "frame": 740000, "episode": 429, "epsilon": 0.05, "avg_loss": 0.05057566672930437, "last_reward": 17.0, "timestamp": 1769014137.677773}
+{"type": "heartbeat", "frame": 760000, "episode": 494, "epsilon": 0.05, "avg_loss": 0.04956732289583394, "last_reward": 12.0, "timestamp": 1769014681.875963}
+{"type": "heartbeat", "frame": 780000, "episode": 552, "epsilon": 0.05, "avg_loss": 0.05684440321638249, "last_reward": 17.0, "timestamp": 1769015233.8911202}
+{"type": "eval", "frame": 800000, "episode": 614, "score": 218.0, "epsilon": 0.05, "timestamp": 1769015822.756187}
+{"type": "progress_hit", "frame": 800000, "episode": 614, "score": 218.0, "target_frame": 200000, "target_score": 5.0, "label": "early-signal", "timestamp": 1769015822.757559}
+{"type": "progress_hit", "frame": 800000, "episode": 614, "score": 218.0, "target_frame": 500000, "target_score": 20.0, "label": "ramp", "timestamp": 1769015822.757666}
+{"type": "heartbeat", "frame": 800000, "episode": 614, "epsilon": 0.05, "avg_loss": 0.061468102591883005, "last_reward": 22.0, "timestamp": 1769015822.8329349}
+{"type": "heartbeat", "frame": 820000, "episode": 665, "epsilon": 0.05, "avg_loss": 0.050199368916865855, "last_reward": 18.0, "timestamp": 1769016411.822062}
+{"type": "heartbeat", "frame": 840000, "episode": 708, "epsilon": 0.05, "avg_loss": 0.052285042656068176, "last_reward": 20.0, "timestamp": 1769016993.431085}
+{"type": "heartbeat", "frame": 860000, "episode": 751, "epsilon": 0.05, "avg_loss": 0.050845316138618916, "last_reward": 12.0, "timestamp": 1769017577.442782}
+{"type": "heartbeat", "frame": 880000, "episode": 799, "epsilon": 0.05, "avg_loss": 0.05669698116891995, "last_reward": 15.0, "timestamp": 1769018168.6940658}
+{"type": "heartbeat", "frame": 900000, "episode": 856, "epsilon": 0.05, "avg_loss": 0.05413021765606001, "last_reward": 19.0, "timestamp": 1769018747.015838}
+{"type": "heartbeat", "frame": 920000, "episode": 906, "epsilon": 0.05, "avg_loss": 0.04515897438806646, "last_reward": 14.0, "timestamp": 1769019310.614174}
+{"type": "heartbeat", "frame": 940000, "episode": 957, "epsilon": 0.05, "avg_loss": 0.058875831542536616, "last_reward": 19.0, "timestamp": 1769019890.227264}
+{"type": "heartbeat", "frame": 960000, "episode": 1001, "epsilon": 0.05, "avg_loss": 0.05568471803619969, "last_reward": 14.0, "timestamp": 1769020453.5133598}
+{"type": "heartbeat", "frame": 980000, "episode": 1053, "epsilon": 0.05, "avg_loss": 0.05659972939809615, "last_reward": 18.0, "timestamp": 1769020999.14609}
+{"type": "eval", "frame": 1000000, "episode": 1112, "score": 278.0, "epsilon": 0.05, "timestamp": 1769021549.2216802}
+{"type": "progress_hit", "frame": 1000000, "episode": 1112, "score": 278.0, "target_frame": 1000000, "target_score": 50.0, "label": "midpoint", "timestamp": 1769021549.22312}
+{"type": "heartbeat", "frame": 1000000, "episode": 1112, "epsilon": 0.05, "avg_loss": 0.06413820538669825, "last_reward": 30.0, "timestamp": 1769021549.50316}
+{"type": "heartbeat", "frame": 1020000, "episode": 1165, "epsilon": 0.05, "avg_loss": 0.05083050174189025, "last_reward": 19.0, "timestamp": 1769022101.7362509}
+{"type": "heartbeat", "frame": 1040000, "episode": 1211, "epsilon": 0.05, "avg_loss": 0.05603458143940026, "last_reward": 30.0, "timestamp": 1769022666.518126}
+{"type": "heartbeat", "frame": 1060000, "episode": 1258, "epsilon": 0.05, "avg_loss": 0.05258736099737386, "last_reward": 29.0, "timestamp": 1769023235.172235}
+{"type": "heartbeat", "frame": 1080000, "episode": 1307, "epsilon": 0.05, "avg_loss": 0.047585679188130364, "last_reward": 22.0, "timestamp": 1769023813.97329}
+{"type": "heartbeat", "frame": 1100000, "episode": 1356, "epsilon": 0.05, "avg_loss": 0.046963209077587414, "last_reward": 18.0, "timestamp": 1769024382.485779}
+{"type": "heartbeat", "frame": 1120000, "episode": 1400, "epsilon": 0.05, "avg_loss": 0.04827681758680043, "last_reward": 19.0, "timestamp": 1769024960.4995751}
+{"type": "heartbeat", "frame": 1140000, "episode": 1452, "epsilon": 0.05, "avg_loss": 0.05365377635909961, "last_reward": 21.0, "timestamp": 1769025523.912756}
+{"type": "heartbeat", "frame": 1160000, "episode": 1499, "epsilon": 0.05, "avg_loss": 0.05042421842356109, "last_reward": 18.0, "timestamp": 1769026094.3322089}
+{"type": "heartbeat", "frame": 1180000, "episode": 1545, "epsilon": 0.05, "avg_loss": 0.04964523669332266, "last_reward": 15.0, "timestamp": 1769026659.7499678}
+{"type": "eval", "frame": 1200000, "episode": 1603, "score": 192.0, "epsilon": 0.05, "timestamp": 1769027243.8605719}
+{"type": "heartbeat", "frame": 1200000, "episode": 1603, "epsilon": 0.05, "avg_loss": 0.0532047106253524, "last_reward": 7.0, "timestamp": 1769027244.1500878}
+{"type": "heartbeat", "frame": 1220000, "episode": 1651, "epsilon": 0.05, "avg_loss": 0.049222740799535154, "last_reward": 10.0, "timestamp": 1769027807.7361941}
+{"type": "heartbeat", "frame": 1240000, "episode": 1705, "epsilon": 0.05, "avg_loss": 0.051287766715342346, "last_reward": 19.0, "timestamp": 1769028378.547046}
+{"type": "heartbeat", "frame": 1260000, "episode": 1762, "epsilon": 0.05, "avg_loss": 0.05187784803606439, "last_reward": 26.0, "timestamp": 1769028946.467266}
+{"type": "heartbeat", "frame": 1280000, "episode": 1807, "epsilon": 0.05, "avg_loss": 0.05819082109216791, "last_reward": 25.0, "timestamp": 1769029505.542149}
+{"type": "heartbeat", "frame": 1300000, "episode": 1853, "epsilon": 0.05, "avg_loss": 0.061349630023219755, "last_reward": 29.0, "timestamp": 1769030066.373077}
+{"type": "heartbeat", "frame": 1320000, "episode": 1902, "epsilon": 0.05, "avg_loss": 0.044314315796575764, "last_reward": 14.0, "timestamp": 1769030648.7705972}
+{"type": "heartbeat", "frame": 1340000, "episode": 1954, "epsilon": 0.05, "avg_loss": 0.05720038985554862, "last_reward": 18.0, "timestamp": 1769031214.490356}
+{"type": "heartbeat", "frame": 1360000, "episode": 2008, "epsilon": 0.05, "avg_loss": 0.05922024630542312, "last_reward": 17.0, "timestamp": 1769031795.5793312}
+{"type": "heartbeat", "frame": 1380000, "episode": 2060, "epsilon": 0.05, "avg_loss": 0.06343657227561754, "last_reward": 27.0, "timestamp": 1769032360.605941}
+{"type": "eval", "frame": 1400000, "episode": 2110, "score": 373.0, "epsilon": 0.05, "timestamp": 1769032929.518304}
+{"type": "heartbeat", "frame": 1400000, "episode": 2110, "epsilon": 0.05, "avg_loss": 0.06352577220726137, "last_reward": 22.0, "timestamp": 1769032929.815688}
+{"type": "heartbeat", "frame": 1420000, "episode": 2164, "epsilon": 0.05, "avg_loss": 0.044796456449798176, "last_reward": 26.0, "timestamp": 1769033489.277334}
+{"type": "heartbeat", "frame": 1440000, "episode": 2209, "epsilon": 0.05, "avg_loss": 0.059541509952396154, "last_reward": 22.0, "timestamp": 1769034062.0869272}
+{"type": "heartbeat", "frame": 1460000, "episode": 2259, "epsilon": 0.05, "avg_loss": 0.07480966723100706, "last_reward": 24.0, "timestamp": 1769034630.84675}
+{"type": "heartbeat", "frame": 1480000, "episode": 2312, "epsilon": 0.05, "avg_loss": 0.04400773141533136, "last_reward": 20.0, "timestamp": 1769035199.83906}
+{"type": "heartbeat", "frame": 1500000, "episode": 2359, "epsilon": 0.05, "avg_loss": 0.05983630592791026, "last_reward": 31.0, "timestamp": 1769035755.050734}
+{"type": "heartbeat", "frame": 1520000, "episode": 2411, "epsilon": 0.05, "avg_loss": 0.051338646560907364, "last_reward": 24.0, "timestamp": 1769036327.350732}
+{"type": "heartbeat", "frame": 1540000, "episode": 2467, "epsilon": 0.05, "avg_loss": 0.062478220323100686, "last_reward": 23.0, "timestamp": 1769036898.9128819}
+{"type": "heartbeat", "frame": 1560000, "episode": 2521, "epsilon": 0.05, "avg_loss": 0.05601858331511418, "last_reward": 34.0, "timestamp": 1769037503.718428}
+{"type": "heartbeat", "frame": 1580000, "episode": 2571, "epsilon": 0.05, "avg_loss": 0.06080939708134303, "last_reward": 32.0, "timestamp": 1769038088.45768}
+{"type": "eval", "frame": 1600000, "episode": 2623, "score": 279.0, "epsilon": 0.05, "timestamp": 1769038661.9766452}
+{"type": "progress_hit", "frame": 1600000, "episode": 2623, "score": 279.0, "target_frame": 1500000, "target_score": 100.0, "label": "momentum", "timestamp": 1769038661.97762}
+{"type": "heartbeat", "frame": 1600000, "episode": 2623, "epsilon": 0.05, "avg_loss": 0.059861189302276165, "last_reward": 31.0, "timestamp": 1769038662.297751}
+{"type": "heartbeat", "frame": 1620000, "episode": 2682, "epsilon": 0.05, "avg_loss": 0.054182050761448435, "last_reward": 20.0, "timestamp": 1769039247.757615}
+{"type": "heartbeat", "frame": 1640000, "episode": 2732, "epsilon": 0.05, "avg_loss": 0.05038939739632256, "last_reward": 24.0, "timestamp": 1769039841.172339}
+{"type": "heartbeat", "frame": 1660000, "episode": 2784, "epsilon": 0.05, "avg_loss": 0.049822150729596615, "last_reward": 6.0, "timestamp": 1769040431.328371}
+{"type": "heartbeat", "frame": 1680000, "episode": 2839, "epsilon": 0.05, "avg_loss": 0.058400732952924, "last_reward": 28.0, "timestamp": 1769041013.7805572}
+{"type": "heartbeat", "frame": 1700000, "episode": 2887, "epsilon": 0.05, "avg_loss": 0.04559747304986505, "last_reward": 37.0, "timestamp": 1769041582.525921}
+{"type": "heartbeat", "frame": 1720000, "episode": 2933, "epsilon": 0.05, "avg_loss": 0.05890921560878103, "last_reward": 17.0, "timestamp": 1769042152.536353}
+{"type": "heartbeat", "frame": 1740000, "episode": 2985, "epsilon": 0.05, "avg_loss": 0.05897723510861397, "last_reward": 20.0, "timestamp": 1769042721.9093812}
+{"type": "heartbeat", "frame": 1760000, "episode": 3035, "epsilon": 0.05, "avg_loss": 0.05254497522344956, "last_reward": 21.0, "timestamp": 1769043301.45598}
+{"type": "heartbeat", "frame": 1780000, "episode": 3084, "epsilon": 0.05, "avg_loss": 0.06261702946254186, "last_reward": 35.0, "timestamp": 1769043876.39444}
+{"type": "eval", "frame": 1800000, "episode": 3132, "score": 335.0, "epsilon": 0.05, "timestamp": 1769044443.611399}
+{"type": "heartbeat", "frame": 1800000, "episode": 3132, "epsilon": 0.05, "avg_loss": 0.05307985833141862, "last_reward": 32.0, "timestamp": 1769044443.919271}
+{"type": "heartbeat", "frame": 1820000, "episode": 3180, "epsilon": 0.05, "avg_loss": 0.05668826471924423, "last_reward": 33.0, "timestamp": 1769045015.985912}
+{"type": "heartbeat", "frame": 1840000, "episode": 3227, "epsilon": 0.05, "avg_loss": 0.05862385958985046, "last_reward": 21.0, "timestamp": 1769045568.753577}
+{"type": "heartbeat", "frame": 1860000, "episode": 3274, "epsilon": 0.05, "avg_loss": 0.05608493660823727, "last_reward": 21.0, "timestamp": 1769046138.695988}
+{"type": "heartbeat", "frame": 1880000, "episode": 3317, "epsilon": 0.05, "avg_loss": 0.05537187459412962, "last_reward": 35.0, "timestamp": 1769046691.263156}
+{"type": "heartbeat", "frame": 1900000, "episode": 3362, "epsilon": 0.05, "avg_loss": 0.05165480500436388, "last_reward": 22.0, "timestamp": 1769047243.96849}
+{"type": "heartbeat", "frame": 1920000, "episode": 3407, "epsilon": 0.05, "avg_loss": 0.05558917224407196, "last_reward": 20.0, "timestamp": 1769047796.614211}
+{"type": "heartbeat", "frame": 1940000, "episode": 3458, "epsilon": 0.05, "avg_loss": 0.0547768466928032, "last_reward": 27.0, "timestamp": 1769048353.989599}
+{"type": "heartbeat", "frame": 1960000, "episode": 3510, "epsilon": 0.05, "avg_loss": 0.05252343729922646, "last_reward": 29.0, "timestamp": 1769048910.3322518}
+{"type": "heartbeat", "frame": 1980000, "episode": 3551, "epsilon": 0.05, "avg_loss": 0.056172075457399405, "last_reward": 15.0, "timestamp": 1769049461.832772}
+{"type": "eval", "frame": 2000000, "episode": 3593, "score": 344.0, "epsilon": 0.05, "timestamp": 1769050016.7008698}
+{"type": "progress_hit", "frame": 2000000, "episode": 3593, "score": 344.0, "target_frame": 2000000, "target_score": 200.0, "label": "pre-strong", "timestamp": 1769050016.702985}
+{"type": "heartbeat", "frame": 2000000, "episode": 3593, "epsilon": 0.05, "avg_loss": 0.05947227893759393, "last_reward": 32.0, "timestamp": 1769050017.033948}
+{"type": "heartbeat", "frame": 2020000, "episode": 3634, "epsilon": 0.05, "avg_loss": 0.05894290130585432, "last_reward": 30.0, "timestamp": 1769050568.072884}
+{"type": "heartbeat", "frame": 2040000, "episode": 3678, "epsilon": 0.05, "avg_loss": 0.053353470545091215, "last_reward": 30.0, "timestamp": 1769051121.773681}
+{"type": "heartbeat", "frame": 2060000, "episode": 3722, "epsilon": 0.05, "avg_loss": 0.05223534378695161, "last_reward": 33.0, "timestamp": 1769051678.3004858}
+{"type": "heartbeat", "frame": 2080000, "episode": 3761, "epsilon": 0.05, "avg_loss": 0.05552268541817154, "last_reward": 33.0, "timestamp": 1769052229.537271}
+{"type": "heartbeat", "frame": 2100000, "episode": 3799, "epsilon": 0.05, "avg_loss": 0.04225550188372532, "last_reward": 22.0, "timestamp": 1769052782.297569}
+{"type": "heartbeat", "frame": 2120000, "episode": 3840, "epsilon": 0.05, "avg_loss": 0.06537586997728795, "last_reward": 34.0, "timestamp": 1769053333.984807}
+{"type": "heartbeat", "frame": 2140000, "episode": 3872, "epsilon": 0.05, "avg_loss": 0.054522337491049414, "last_reward": 35.0, "timestamp": 1769053886.961004}
+{"type": "heartbeat", "frame": 2160000, "episode": 3913, "epsilon": 0.05, "avg_loss": 0.051323103323831394, "last_reward": 32.0, "timestamp": 1769054445.533918}
+{"type": "heartbeat", "frame": 2180000, "episode": 3950, "epsilon": 0.05, "avg_loss": 0.05338053393241917, "last_reward": 27.0, "timestamp": 1769055012.1113658}
+{"type": "eval", "frame": 2200000, "episode": 3984, "score": 544.0, "epsilon": 0.05, "timestamp": 1769055581.9258611}
+{"type": "heartbeat", "frame": 2200000, "episode": 3984, "epsilon": 0.05, "avg_loss": 0.05330308114399055, "last_reward": 33.0, "timestamp": 1769055582.248481}
+{"type": "heartbeat", "frame": 2220000, "episode": 4023, "epsilon": 0.05, "avg_loss": 0.04823988158429085, "last_reward": 28.0, "timestamp": 1769056140.196915}
+{"type": "heartbeat", "frame": 2240000, "episode": 4059, "epsilon": 0.05, "avg_loss": 0.04775181397491572, "last_reward": 31.0, "timestamp": 1769056707.942097}
+{"type": "heartbeat", "frame": 2260000, "episode": 4092, "epsilon": 0.05, "avg_loss": 0.04991067132475425, "last_reward": 28.0, "timestamp": 1769057282.8216891}
+{"type": "heartbeat", "frame": 2280000, "episode": 4124, "epsilon": 0.05, "avg_loss": 0.04728390369564295, "last_reward": 34.0, "timestamp": 1769057860.109032}
+{"type": "heartbeat", "frame": 2300000, "episode": 4153, "epsilon": 0.05, "avg_loss": 0.05026545452918591, "last_reward": 34.0, "timestamp": 1769058423.140227}
+{"type": "heartbeat", "frame": 2320000, "episode": 4189, "epsilon": 0.05, "avg_loss": 0.04808757543563843, "last_reward": 23.0, "timestamp": 1769058981.122833}
+{"type": "heartbeat", "frame": 2340000, "episode": 4219, "epsilon": 0.05, "avg_loss": 0.04619369768861974, "last_reward": 31.0, "timestamp": 1769060546.271717}
+{"type": "heartbeat", "frame": 2360000, "episode": 4257, "epsilon": 0.05, "avg_loss": 0.049252731772139666, "last_reward": 34.0, "timestamp": 1769098258.1896489}
+{"type": "heartbeat", "frame": 2380000, "episode": 4292, "epsilon": 0.05, "avg_loss": 0.04999723113574011, "last_reward": 22.0, "timestamp": 1769098817.693418}
+{"type": "eval", "frame": 2400000, "episode": 4326, "score": 557.0, "epsilon": 0.05, "timestamp": 1769099380.5163012}
+{"type": "early_stop", "frame": 2400000, "episode": 4326, "score": 557.0, "timestamp": 1769099380.5166268}

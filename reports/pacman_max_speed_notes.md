@@ -8,23 +8,25 @@ Push the M1 as hard as possible for Ms. Pac-Man while keeping results reliable e
 - Keep **caffeinate** running to prevent sleep.
 - Plug in power, keep thermal headroom (lid open, airflow).
 
-## Compute + Threading (to add)
+## Compute + Threading
 - Explicitly set CPU threading:
   - `torch.set_num_threads(N)`
   - `torch.set_num_interop_threads(M)`
-  - Env vars: `OMP_NUM_THREADS`, `MKL_NUM_THREADS`
-- Use **CPU** (benchmarks show CPU faster than MPS for this project).
+- Env vars: `OMP_NUM_THREADS`, `MKL_NUM_THREADS`
+- Use **MPS** for this max-speed profile; fall back to CPU if MPS proves slower.
+- Use config: `configs/pacman_m1_max.json`.
 
 ## Training throughput (speed)
-- `update_every_frames = 1`
-- `eval_every_frames = 100000` (early signal)
-- `checkpoint_every_frames = 100000`
-- `log_every_frames = 10000`
+- `update_every_frames = 4` (fewer optimizer steps)
+- `eval_every_frames = 200000` (reduce eval overhead)
+- `eval_episodes = 5`
+- `checkpoint_every_frames = 200000`
+- `log_every_frames = 20000`
 - `efficient_replay = true`
-- Optional: reduce replay capacity (1,000,000 -> 500,000) if memory becomes a bottleneck.
+- Reduced replay capacity to 300,000 to lower RAM pressure.
 
 ## Learning efficiency (accuracy)
-- Dueling DQN + PER + n-step + NoisyNet
+- Dueling DQN + n-step (PER + NoisyNet disabled to speed up)
 - Reward clipping for Atari
 - Frame skip = 4, grayscale, 84x84, stack 4 frames
 

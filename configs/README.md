@@ -52,6 +52,10 @@ Resume training:
 - `resume_from`: checkpoint path to warm-start a run.
 - `resume_metrics`: append to existing metrics file instead of overwriting.
 
+Max-speed config:
+- `pacman_m1_max.json`: MPS-first Ms Pac-Man config tuned for wall-clock speed
+  (reduced update/eval cadence, smaller replay, PER/Noisy off).
+
 Rainbow-Lite switches:
 - `dueling`: enable dueling value/advantage heads.
 - `noisy`: enable NoisyLinear exploration (epsilon still supported but optional).
