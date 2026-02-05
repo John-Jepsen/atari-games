@@ -2,6 +2,9 @@
 doc-referances/
 atari-games-instructions/
 
+## Claude Code (local AI assistant config)
+CLAUDE.md
+
 ## Local configs and secrets
 .env
 .env.*
@@ -45,4 +48,9 @@ tensorboard/
 *.h5
 reports/*.csv
 reports/*.json
+reports/*.jsonl
 reports/*.log
+reports/archive/
+reports/pacman_runs/
+reports/monitor*.log
+reports/monitor*.csv
