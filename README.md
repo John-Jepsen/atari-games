@@ -1,8 +1,6 @@
 # Atari Games - Deep Reinforcement Learning
-***
 
-## Blog 
-- https://medium.com/@john_60116/teaching-neural-networks-to-play-atari-a-deep-q-learning-journey-0f7742901ed8  
+<img width="688" height="481" alt="image" src="https://github.com/user-attachments/assets/bdf462e4-f811-434f-ba84-7db75245a8d0" />
 
 ## Task
 Train deep reinforcement learning agents to play classic video games (CartPole, Space Invaders, and Pac-Man) using only raw pixel observations and reward signals. The challenge is implementing a DQN architecture that learns effective policies from high-dimensional visual input without game-specific feature engineering.
