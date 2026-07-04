@@ -37,6 +37,8 @@ runs/
 logs/
 wandb/
 tensorboard/
+mlruns/
+mlflow.db
 *.log
 *.npy
 *.npz

@@ -14,10 +14,17 @@ def main() -> int:
         required=True,
         help="Path to a JSON config file (e.g., configs/space_invaders.json).",
     )
+    parser.add_argument(
+        "--mlflow",
+        action="store_true",
+        help="Log params, metrics, and artifacts to MLflow.",
+    )
     args = parser.parse_args()
 
     cfg = load_config(args.config)
     require_keys(cfg, ["env_id", "seed", "dqn", "training"], "root")
+    if args.mlflow:
+        cfg["training"]["mlflow"] = True
 
     result = train_from_config(cfg)
     dump_run_summary(cfg, result)

@@ -14,3 +14,4 @@ opencv-python
 matplotlib
 tqdm
 tensorboard
+mlflow>=3.0

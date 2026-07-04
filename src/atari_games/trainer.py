@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import subprocess
 import time
 from collections import deque
 from dataclasses import dataclass
@@ -56,6 +57,84 @@ def _log_event(path: Path | None, payload: dict[str, Any]) -> None:
     payload.setdefault("timestamp", time.time())
     with path.open("a") as f:
         f.write(json.dumps(payload) + "\n")
+
+
+def _git_sha() -> str:
+    try:
+        return subprocess.check_output(["git", "rev-parse", "--short", "HEAD"], text=True).strip()
+    except Exception:
+        return "nogit"
+
+
+def _flatten_config(cfg: dict[str, Any], prefix: str = "") -> dict[str, str]:
+    flat: dict[str, str] = {}
+    for key, value in cfg.items():
+        dotted = f"{prefix}{key}"
+        if isinstance(value, dict):
+            flat.update(_flatten_config(value, prefix=f"{dotted}."))
+        else:
+            flat[dotted] = str(value)
+    return flat
+
+
+def _algorithm_variant(cfg: dict[str, Any]) -> str:
+    dqn_cfg = cfg.get("dqn", {})
+    parts = ["dqn"]
+    if dqn_cfg.get("dueling", True):
+        parts.append("dueling")
+    if dqn_cfg.get("noisy", False):
+        parts.append("noisy")
+    if float(dqn_cfg.get("per_alpha", 0.0)) > 0.0:
+        parts.append("per")
+    if int(dqn_cfg.get("n_step", 1)) > 1:
+        parts.append(f"nstep{int(dqn_cfg['n_step'])}")
+    return "+".join(parts)
+
+
+def _start_mlflow_run(cfg: dict[str, Any]):
+    try:
+        import mlflow
+
+        mlflow.set_experiment("atari_games")
+        env_tag = cfg["env_id"].replace("/", "_")
+        stamp = time.strftime("%Y%m%d_%H%M%S", time.gmtime())
+        mlflow.start_run(run_name=f"{env_tag}_{stamp}_{_git_sha()}")
+        mlflow.set_tags(
+            {
+                "git_sha": _git_sha(),
+                "env_id": cfg["env_id"],
+                "algorithm": _algorithm_variant(cfg),
+            }
+        )
+        mlflow.log_params(_flatten_config(cfg))
+        return mlflow
+    except Exception as exc:
+        print(f"MLflow logging skipped: {exc}")
+        return None
+
+
+def _mlflow_log_metrics(mlflow_mod, metrics: dict[str, float], step: int) -> None:
+    if mlflow_mod is None:
+        return
+    try:
+        mlflow_mod.log_metrics({k: float(v) for k, v in metrics.items() if v is not None}, step=step)
+    except Exception as exc:
+        print(f"MLflow logging skipped: {exc}")
+
+
+def _end_mlflow_run(mlflow_mod, status: str, artifact_paths: list[Path | None]) -> None:
+    if mlflow_mod is None:
+        return
+    try:
+        for path in artifact_paths:
+            if path is not None and Path(path).exists():
+                mlflow_mod.log_artifact(str(path))
+    except Exception as exc:
+        print(f"MLflow logging skipped: {exc}")
+    try:
+        mlflow_mod.end_run(status=status)
+    except Exception as exc:
+        print(f"MLflow logging skipped: {exc}")
 
 
 def _bootstrap_p_improve(
@@ -340,62 +419,27 @@ def train_from_config(
     if start_frame >= total_frames:
         return TrainResult(metrics_path=metrics_path, checkpoint_path=checkpoint_path)
 
-    for frame in range(start_frame + 1, total_frames + 1):
-        agent.reset_noise()
-        if frame <= epsilon_boost_until:
-            if np.random.rand() < plateau_epsilon_boost:
-                action = env.action_space.sample()
-            else:
-                action = agent.select_action(obs, eval_mode=True)
-        else:
-            action = choose_action(agent, obs, env.action_space)
-        next_obs, reward, terminated, truncated, _ = env.step(action)
-        done = terminated or truncated
-        if reward_clip:
-            reward = float(np.clip(reward, -1.0, 1.0))
-        next_obs = format_obs(to_numpy(next_obs), cfg.get("observation_type"))
+    mlflow_mod = _start_mlflow_run(cfg) if training_cfg.get("mlflow") else None
+    mlflow_last_episode_frame = start_frame
 
-        n_step_buffer.append((obs, action, reward, next_obs, done))
-        if len(n_step_buffer) == n_step:
-            R = 0.0
-            done_n = False
-            next_obs_n = n_step_buffer[-1][3]
-            for i, (_, _, r, _, d) in enumerate(n_step_buffer):
-                R += (cfg["dqn"]["gamma"] ** i) * r
-                if d:
-                    done_n = True
-                    break
-            obs_0, action_0 = n_step_buffer[0][0], n_step_buffer[0][1]
-            buffer.add(obs_0, action_0, R, next_obs_n, done_n)
-            n_step_buffer.popleft()
-        obs = next_obs
-        episode_reward += reward
-
-        agent.step()
-        if frame > learning_starts and len(buffer) >= agent.config.batch_size and frame % update_every == 0:
-            beta = per_beta_schedule.value(frame)
-            if isinstance(buffer, (PrioritizedReplayBuffer, PrioritizedFrameStackReplayBuffer)):
-                batch = buffer.sample(agent.config.batch_size, device, beta=beta)
+    try:
+        for frame in range(start_frame + 1, total_frames + 1):
+            agent.reset_noise()
+            if frame <= epsilon_boost_until:
+                if np.random.rand() < plateau_epsilon_boost:
+                    action = env.action_space.sample()
+                else:
+                    action = agent.select_action(obs, eval_mode=True)
             else:
-                batch = buffer.sample(agent.config.batch_size, device)
-            loss, td_errors = agent.update(batch)
-            if isinstance(buffer, (PrioritizedReplayBuffer, PrioritizedFrameStackReplayBuffer)):
-                buffer.update_priorities(batch.indices, td_errors + 1e-6)
-            losses.append(loss)
-            td_error_mean = float(np.mean(td_errors)) if td_errors.size else 0.0
-            if td_error_ema is None:
-                td_error_ema = td_error_mean
-            else:
-                td_error_ema = (1.0 - td_error_ema_alpha) * td_error_ema + td_error_ema_alpha * td_error_mean
-            agent.maybe_update_target()
+                action = choose_action(agent, obs, env.action_space)
+            next_obs, reward, terminated, truncated, _ = env.step(action)
+            done = terminated or truncated
+            if reward_clip:
+                reward = float(np.clip(reward, -1.0, 1.0))
+            next_obs = format_obs(to_numpy(next_obs), cfg.get("observation_type"))
 
-        if done:
-            episode += 1
-            avg_loss = float(np.mean(losses)) if losses else 0.0
-            _append_metrics(metrics_path, frame, episode, episode_reward, agent.epsilon(), avg_loss)
-            last_episode_reward = episode_reward
-            # Flush remaining n-step transitions (shorter horizons)
-            while n_step_buffer:
+            n_step_buffer.append((obs, action, reward, next_obs, done))
+            if len(n_step_buffer) == n_step:
                 R = 0.0
                 done_n = False
                 next_obs_n = n_step_buffer[-1][3]
@@ -407,182 +451,242 @@ def train_from_config(
                 obs_0, action_0 = n_step_buffer[0][0], n_step_buffer[0][1]
                 buffer.add(obs_0, action_0, R, next_obs_n, done_n)
                 n_step_buffer.popleft()
+            obs = next_obs
+            episode_reward += reward
 
-            obs, _ = env.reset()
-            obs = format_obs(to_numpy(obs), cfg.get("observation_type"))
-            episode_reward = 0.0
-            losses = []
+            agent.step()
+            if frame > learning_starts and len(buffer) >= agent.config.batch_size and frame % update_every == 0:
+                beta = per_beta_schedule.value(frame)
+                if isinstance(buffer, (PrioritizedReplayBuffer, PrioritizedFrameStackReplayBuffer)):
+                    batch = buffer.sample(agent.config.batch_size, device, beta=beta)
+                else:
+                    batch = buffer.sample(agent.config.batch_size, device)
+                loss, td_errors = agent.update(batch)
+                if isinstance(buffer, (PrioritizedReplayBuffer, PrioritizedFrameStackReplayBuffer)):
+                    buffer.update_priorities(batch.indices, td_errors + 1e-6)
+                losses.append(loss)
+                td_error_mean = float(np.mean(td_errors)) if td_errors.size else 0.0
+                if td_error_ema is None:
+                    td_error_ema = td_error_mean
+                else:
+                    td_error_ema = (1.0 - td_error_ema_alpha) * td_error_ema + td_error_ema_alpha * td_error_mean
+                agent.maybe_update_target()
 
-        if eval_env and eval_every and frame % eval_every == 0:
-            score, returns = evaluate_agent(
-                agent,
-                eval_env,
-                eval_episodes,
-                eval_epsilon,
-                cfg.get("observation_type"),
-                return_returns=True,
-            )
-            _log_event(
-                event_log_path,
-                {
-                    "type": "eval",
-                    "frame": frame,
-                    "episode": episode,
-                    "score": score,
-                    "epsilon": agent.epsilon(),
-                },
-            )
-            while progress_index < len(progress_targets) and frame >= progress_targets[progress_index]["frame"]:
-                target = progress_targets[progress_index]
-                passed = score >= target["min_score"]
+            if done:
+                episode += 1
+                avg_loss = float(np.mean(losses)) if losses else 0.0
+                _append_metrics(metrics_path, frame, episode, episode_reward, agent.epsilon(), avg_loss)
+                if log_every == 0 or frame - mlflow_last_episode_frame >= log_every:
+                    _mlflow_log_metrics(
+                        mlflow_mod,
+                        {"episode_reward": episode_reward, "epsilon": agent.epsilon(), "loss": avg_loss},
+                        step=frame,
+                    )
+                    mlflow_last_episode_frame = frame
+                last_episode_reward = episode_reward
+                # Flush remaining n-step transitions (shorter horizons)
+                while n_step_buffer:
+                    R = 0.0
+                    done_n = False
+                    next_obs_n = n_step_buffer[-1][3]
+                    for i, (_, _, r, _, d) in enumerate(n_step_buffer):
+                        R += (cfg["dqn"]["gamma"] ** i) * r
+                        if d:
+                            done_n = True
+                            break
+                    obs_0, action_0 = n_step_buffer[0][0], n_step_buffer[0][1]
+                    buffer.add(obs_0, action_0, R, next_obs_n, done_n)
+                    n_step_buffer.popleft()
+
+                obs, _ = env.reset()
+                obs = format_obs(to_numpy(obs), cfg.get("observation_type"))
+                episode_reward = 0.0
+                losses = []
+
+            if eval_env and eval_every and frame % eval_every == 0:
+                score, returns = evaluate_agent(
+                    agent,
+                    eval_env,
+                    eval_episodes,
+                    eval_epsilon,
+                    cfg.get("observation_type"),
+                    return_returns=True,
+                )
                 _log_event(
                     event_log_path,
                     {
-                        "type": "progress_hit" if passed else "progress_miss",
+                        "type": "eval",
                         "frame": frame,
                         "episode": episode,
                         "score": score,
-                        "target_frame": target["frame"],
-                        "target_score": target["min_score"],
-                        "label": target.get("label", ""),
+                        "epsilon": agent.epsilon(),
                     },
                 )
-                progress_index += 1
-            if early_stop_reward is not None and frame >= early_stop_min_frames:
-                if score >= float(early_stop_reward):
-                    early_stop_hits += 1
-                else:
-                    early_stop_hits = 0
-                if early_stop_hits >= early_stop_eval_windows:
+                _mlflow_log_metrics(mlflow_mod, {"eval_score": score}, step=frame)
+                while progress_index < len(progress_targets) and frame >= progress_targets[progress_index]["frame"]:
+                    target = progress_targets[progress_index]
+                    passed = score >= target["min_score"]
                     _log_event(
                         event_log_path,
                         {
-                            "type": "early_stop",
+                            "type": "progress_hit" if passed else "progress_miss",
                             "frame": frame,
                             "episode": episode,
                             "score": score,
+                            "target_frame": target["frame"],
+                            "target_score": target["min_score"],
+                            "label": target.get("label", ""),
                         },
                     )
-                    break
-
-            if plateau_enabled and frame >= plateau_min_frames:
-                if plateau_state.prev_eval_returns is None:
-                    plateau_state.prev_eval_returns = returns
-                else:
-                    p_improve = _bootstrap_p_improve(
-                        returns,
-                        plateau_state.prev_eval_returns,
-                        plateau_perf_delta,
-                        plateau_bootstrap_samples,
-                        rng,
-                    )
-                    perf_plateau = p_improve < plateau_perf_p_threshold
-                    if perf_plateau:
-                        plateau_state.perf_hits += 1
+                    progress_index += 1
+                if early_stop_reward is not None and frame >= early_stop_min_frames:
+                    if score >= float(early_stop_reward):
+                        early_stop_hits += 1
                     else:
-                        plateau_state.perf_hits = 0
-
-                    probe = _sample_probe_states(buffer, plateau_probe_states, device)
-                    churn_ok = True
-                    gap_ok = True
-                    td_ok = True
-                    churn = None
-                    gap = None
-                    if probe is not None:
-                        with torch.no_grad():
-                            q_vals = agent.online_net(probe)
-                        action_dist = _action_distribution(q_vals)
-                        if plateau_state.prev_action_dist is not None:
-                            churn = _js_divergence(action_dist, plateau_state.prev_action_dist)
-                            churn_ok = churn < plateau_churn_threshold
-                        plateau_state.prev_action_dist = action_dist
-
-                        gap = _advantage_gap(q_vals)
-                        if plateau_state.prev_adv_gap is not None:
-                            gap_ok = (gap - plateau_state.prev_adv_gap) <= plateau_gap_delta
-                        plateau_state.prev_adv_gap = gap
-
-                    if td_error_ema is not None and plateau_state.prev_td_error is not None:
-                        td_improve = plateau_state.prev_td_error - td_error_ema
-                        td_ok = td_improve <= plateau_td_improve_threshold
-                    plateau_state.prev_td_error = td_error_ema
-
-                    behavior_plateau = churn_ok
-                    learning_plateau = gap_ok or td_ok
-
-                    if perf_plateau and behavior_plateau and learning_plateau:
-                        plateau_state.gate_hits += 1
-                    else:
-                        plateau_state.gate_hits = 0
-
-                    plateau_state.prev_eval_returns = returns
-
-                    if plateau_state.gate_hits >= plateau_eval_windows:
+                        early_stop_hits = 0
+                    if early_stop_hits >= early_stop_eval_windows:
                         _log_event(
                             event_log_path,
                             {
-                                "type": "plateau_gate",
+                                "type": "early_stop",
                                 "frame": frame,
                                 "episode": episode,
-                                "p_improve": p_improve,
-                                "churn": churn,
-                                "adv_gap": gap,
-                                "td_error_ema": td_error_ema,
+                                "score": score,
                             },
                         )
-                        action_cooldown_ok = (
-                            plateau_action_cooldown == 0
-                            or frame - plateau_state.last_action_frame >= plateau_action_cooldown
+                        break
+
+                if plateau_enabled and frame >= plateau_min_frames:
+                    if plateau_state.prev_eval_returns is None:
+                        plateau_state.prev_eval_returns = returns
+                    else:
+                        p_improve = _bootstrap_p_improve(
+                            returns,
+                            plateau_state.prev_eval_returns,
+                            plateau_perf_delta,
+                            plateau_bootstrap_samples,
+                            rng,
                         )
-                        if plateau_action != "stop" and action_cooldown_ok:
-                            if plateau_action == "epsilon_boost":
-                                epsilon_boost_until = frame + plateau_boost_frames
-                                plateau_state.last_action_frame = frame
-                                _log_event(
-                                    event_log_path,
-                                    {
-                                        "type": "plateau_action",
-                                        "action": "epsilon_boost",
-                                        "frame": frame,
-                                        "duration_frames": plateau_boost_frames,
-                                        "epsilon": plateau_epsilon_boost,
-                                    },
-                                )
-                            elif plateau_action == "lr_decay":
-                                for group in agent.optimizer.param_groups:
-                                    group["lr"] *= plateau_lr_decay
-                                plateau_state.last_action_frame = frame
-                                _log_event(
-                                    event_log_path,
-                                    {
-                                        "type": "plateau_action",
-                                        "action": "lr_decay",
-                                        "frame": frame,
-                                        "lr_decay": plateau_lr_decay,
-                                    },
-                                )
+                        perf_plateau = p_improve < plateau_perf_p_threshold
+                        if perf_plateau:
+                            plateau_state.perf_hits += 1
+                        else:
+                            plateau_state.perf_hits = 0
+
+                        probe = _sample_probe_states(buffer, plateau_probe_states, device)
+                        churn_ok = True
+                        gap_ok = True
+                        td_ok = True
+                        churn = None
+                        gap = None
+                        if probe is not None:
+                            with torch.no_grad():
+                                q_vals = agent.online_net(probe)
+                            action_dist = _action_distribution(q_vals)
+                            if plateau_state.prev_action_dist is not None:
+                                churn = _js_divergence(action_dist, plateau_state.prev_action_dist)
+                                churn_ok = churn < plateau_churn_threshold
+                            plateau_state.prev_action_dist = action_dist
+
+                            gap = _advantage_gap(q_vals)
+                            if plateau_state.prev_adv_gap is not None:
+                                gap_ok = (gap - plateau_state.prev_adv_gap) <= plateau_gap_delta
+                            plateau_state.prev_adv_gap = gap
+
+                        if td_error_ema is not None and plateau_state.prev_td_error is not None:
+                            td_improve = plateau_state.prev_td_error - td_error_ema
+                            td_ok = td_improve <= plateau_td_improve_threshold
+                        plateau_state.prev_td_error = td_error_ema
+
+                        behavior_plateau = churn_ok
+                        learning_plateau = gap_ok or td_ok
+
+                        if perf_plateau and behavior_plateau and learning_plateau:
+                            plateau_state.gate_hits += 1
+                        else:
                             plateau_state.gate_hits = 0
-                        if plateau_stop_after_action or plateau_action == "stop":
-                            break
 
-        if checkpoint_every and frame % checkpoint_every == 0:
-            _save_checkpoint(checkpoint_path, agent)
+                        plateau_state.prev_eval_returns = returns
 
-        if log_every and frame % log_every == 0:
-            avg_loss = float(np.mean(losses)) if losses else 0.0
-            _log_event(
-                event_log_path,
-                {
-                    "type": "heartbeat",
-                    "frame": frame,
-                    "episode": episode,
-                    "epsilon": agent.epsilon(),
-                    "avg_loss": avg_loss,
-                    "last_reward": last_episode_reward,
-                },
-            )
+                        if plateau_state.gate_hits >= plateau_eval_windows:
+                            _log_event(
+                                event_log_path,
+                                {
+                                    "type": "plateau_gate",
+                                    "frame": frame,
+                                    "episode": episode,
+                                    "p_improve": p_improve,
+                                    "churn": churn,
+                                    "adv_gap": gap,
+                                    "td_error_ema": td_error_ema,
+                                },
+                            )
+                            action_cooldown_ok = (
+                                plateau_action_cooldown == 0
+                                or frame - plateau_state.last_action_frame >= plateau_action_cooldown
+                            )
+                            if plateau_action != "stop" and action_cooldown_ok:
+                                if plateau_action == "epsilon_boost":
+                                    epsilon_boost_until = frame + plateau_boost_frames
+                                    plateau_state.last_action_frame = frame
+                                    _log_event(
+                                        event_log_path,
+                                        {
+                                            "type": "plateau_action",
+                                            "action": "epsilon_boost",
+                                            "frame": frame,
+                                            "duration_frames": plateau_boost_frames,
+                                            "epsilon": plateau_epsilon_boost,
+                                        },
+                                    )
+                                elif plateau_action == "lr_decay":
+                                    for group in agent.optimizer.param_groups:
+                                        group["lr"] *= plateau_lr_decay
+                                    plateau_state.last_action_frame = frame
+                                    _log_event(
+                                        event_log_path,
+                                        {
+                                            "type": "plateau_action",
+                                            "action": "lr_decay",
+                                            "frame": frame,
+                                            "lr_decay": plateau_lr_decay,
+                                        },
+                                    )
+                                plateau_state.gate_hits = 0
+                            if plateau_stop_after_action or plateau_action == "stop":
+                                break
 
-    _save_checkpoint(checkpoint_path, agent)
+            if checkpoint_every and frame % checkpoint_every == 0:
+                _save_checkpoint(checkpoint_path, agent)
+
+            if log_every and frame % log_every == 0:
+                avg_loss = float(np.mean(losses)) if losses else 0.0
+                _log_event(
+                    event_log_path,
+                    {
+                        "type": "heartbeat",
+                        "frame": frame,
+                        "episode": episode,
+                        "epsilon": agent.epsilon(),
+                        "avg_loss": avg_loss,
+                        "last_reward": last_episode_reward,
+                    },
+                )
+                _mlflow_log_metrics(
+                    mlflow_mod,
+                    {"avg_loss": avg_loss, "epsilon": agent.epsilon(), "last_episode_reward": last_episode_reward},
+                    step=frame,
+                )
+
+        _save_checkpoint(checkpoint_path, agent)
+    except BaseException:
+        _end_mlflow_run(mlflow_mod, status="FAILED", artifact_paths=[])
+        raise
+    _end_mlflow_run(
+        mlflow_mod,
+        status="FINISHED",
+        artifact_paths=[checkpoint_path, metrics_path, event_log_path],
+    )
     return TrainResult(metrics_path=metrics_path, checkpoint_path=checkpoint_path)
 
 
